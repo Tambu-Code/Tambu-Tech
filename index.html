@@ -1,1323 +1,1806 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TambuTech — Electronics · 3D Print</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --navy: #1c2331;
-    --navy2: #2e3f5c;
-    --crimson: #972b50;
-    --crimson-light: #c0395f;
-    --sky: #4fc3f7;
-    --sky-dim: #99c4fe60;
-    --bg: #0e1118;
-    --surface: #151b27;
-    --surface2: #1a2234;
-    --text: #e8edf5;
-    --text-dim: #8a9ab8;
-    --border: rgba(79,195,247,0.12);
-    --mono: 'DM Mono', monospace;
-    --sans: 'Syne', sans-serif;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    overflow-x: hidden;
-  }
-
-  /* ── NOISE OVERLAY ── */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-    opacity: 0.03;
-    pointer-events: none;
-    z-index: 9999;
-  }
-
-  /* ── NAVIGATION ── */
-  nav {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 40px;
-    height: 64px;
-    background: rgba(14,17,24,0.85);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .nav-logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    text-decoration: none;
-  }
-
-  .nav-logo-img {
-    width: 36px;
-    height: 36px;
-  }
-
-  .nav-brand {
-    font-family: var(--sans);
-    font-weight: 800;
-    font-size: 18px;
-    letter-spacing: -0.5px;
-  }
-  .nav-brand span:first-child { color: rgba(153,196,254,0.85); }
-  .nav-brand span:last-child { color: var(--crimson); font-weight: 400; }
-
-  .nav-links {
-    display: flex;
-    gap: 8px;
-    list-style: none;
-  }
-
-  .nav-links a {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text-dim);
-    text-decoration: none;
-    padding: 6px 14px;
-    border-radius: 4px;
-    border: 1px solid transparent;
-    transition: all 0.2s;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-
-  .nav-links a:hover,
-  .nav-links a.active {
-    color: var(--sky);
-    border-color: var(--border);
-    background: rgba(79,195,247,0.06);
-  }
-
-  /* ── PAGES ── */
-  .page {
-    display: none;
-    min-height: 100vh;
-    padding-top: 64px;
-  }
-  .page.active { display: block; }
-
-  /* ── HOME PAGE ── */
-  .hero {
-    position: relative;
-    min-height: calc(100vh - 64px);
-    display: flex;
-    align-items: center;
-    overflow: hidden;
-  }
-
-  .hero-bg {
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 60% 70% at 70% 50%, rgba(46,63,92,0.4) 0%, transparent 60%),
-      radial-gradient(ellipse 40% 40% at 20% 80%, rgba(151,43,80,0.15) 0%, transparent 50%),
-      radial-gradient(ellipse 50% 50% at 80% 10%, rgba(79,195,247,0.08) 0%, transparent 50%);
-  }
-
-  /* PCB grid background */
-  .hero-grid {
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(79,195,247,0.05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(79,195,247,0.05) 1px, transparent 1px);
-    background-size: 40px 40px;
-    mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
-  }
-
-  .hero-content {
-    position: relative;
-    z-index: 2;
-    padding: 80px 80px;
-    max-width: 700px;
-  }
-
-  .hero-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--sky);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-bottom: 28px;
-    padding: 6px 14px;
-    border: 1px solid rgba(79,195,247,0.25);
-    border-radius: 2px;
-    background: rgba(79,195,247,0.05);
-  }
-  .hero-tag::before {
-    content: '';
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--sky);
-    animation: blink 2s ease-in-out infinite;
-  }
-  @keyframes blink {
-    0%,100% { opacity: 1; }
-    50% { opacity: 0.2; }
-  }
-
-  .hero-h1 {
-    font-size: clamp(48px, 7vw, 90px);
-    font-weight: 800;
-    line-height: 0.95;
-    letter-spacing: -3px;
-    margin-bottom: 24px;
-  }
-  .hero-h1 .line1 { color: rgba(153,196,254,0.85); display: block; }
-  .hero-h1 .line2 {
-    color: var(--crimson);
-    font-weight: 400;
-    display: block;
-    letter-spacing: -2px;
-  }
-
-  .hero-sub {
-    font-family: var(--mono);
-    font-size: 14px;
-    color: var(--text-dim);
-    line-height: 1.8;
-    max-width: 480px;
-    margin-bottom: 48px;
-  }
-
-  .hero-ctas {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--crimson);
-    color: #fff;
-    font-family: var(--mono);
-    font-size: 13px;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    padding: 14px 28px;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.2s;
-  }
-  .btn-primary:hover {
-    background: var(--crimson-light);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(151,43,80,0.4);
-  }
-
-  .btn-ghost {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: transparent;
-    color: var(--sky);
-    font-family: var(--mono);
-    font-size: 13px;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    padding: 13px 28px;
-    border-radius: 4px;
-    border: 1px solid rgba(79,195,247,0.3);
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.2s;
-  }
-  .btn-ghost:hover {
-    background: rgba(79,195,247,0.08);
-    border-color: var(--sky);
-  }
-
-  .hero-visual {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-  }
-  .hero-logo-wrap {
-    width: min(420px, 45vw);
-    animation: float 6s ease-in-out infinite;
-    filter: drop-shadow(0 0 60px rgba(79,195,247,0.15));
-  }
-  @keyframes float {
-    0%,100% { transform: translateY(0); }
-    50% { transform: translateY(-16px); }
-  }
-
-  /* Home services strip */
-  .services-strip {
-    padding: 80px 80px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2px;
-    background: var(--border);
-  }
-
-  .service-card {
-    background: var(--surface);
-    padding: 48px 40px;
-    cursor: pointer;
-    transition: background 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-  .service-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--sky), transparent);
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-  .service-card:hover { background: var(--surface2); }
-  .service-card:hover::before { opacity: 1; }
-  .service-card:nth-child(2)::before {
-    background: linear-gradient(90deg, transparent, var(--crimson), transparent);
-  }
-
-  .sc-num {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--sky);
-    letter-spacing: 0.1em;
-    margin-bottom: 24px;
-    opacity: 0.6;
-  }
-  .service-card:nth-child(2) .sc-num { color: var(--crimson); }
-
-  .sc-icon {
-    font-size: 40px;
-    margin-bottom: 20px;
-    display: block;
-  }
-
-  .sc-title {
-    font-size: 24px;
-    font-weight: 700;
-    margin-bottom: 12px;
-    letter-spacing: -0.5px;
-  }
-
-  .sc-desc {
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--text-dim);
-    line-height: 1.7;
-  }
-
-  .sc-arrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--sky);
-    margin-top: 28px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    opacity: 0;
-    transform: translateX(-8px);
-    transition: all 0.2s;
-  }
-  .service-card:nth-child(2) .sc-arrow { color: var(--crimson); }
-  .service-card:hover .sc-arrow { opacity: 1; transform: translateX(0); }
-
-  .stats-row {
-    padding: 60px 80px;
-    display: flex;
-    gap: 0;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-  }
-  .stat {
-    flex: 1;
-    padding: 24px 40px;
-    border-right: 1px solid var(--border);
-  }
-  .stat:last-child { border-right: none; }
-  .stat-val {
-    font-size: 44px;
-    font-weight: 800;
-    letter-spacing: -2px;
-    line-height: 1;
-    margin-bottom: 8px;
-  }
-  .stat-val span { color: var(--crimson); }
-  .stat-label {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-  }
-
-  /* ── 3D PRINT PAGE ── */
-  .page-hero {
-    padding: 80px 80px 60px;
-    position: relative;
-    overflow: hidden;
-  }
-  .page-hero::after {
-    content: '';
-    position: absolute;
-    right: 0; top: 0; bottom: 0;
-    width: 40%;
-    background: linear-gradient(90deg, transparent, rgba(151,43,80,0.04));
-    pointer-events: none;
-  }
-
-  .page-tag {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--crimson);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .page-tag::before {
-    content: '';
-    width: 32px; height: 1px;
-    background: var(--crimson);
-  }
-
-  .page-h1 {
-    font-size: clamp(36px, 5vw, 64px);
-    font-weight: 800;
-    letter-spacing: -2px;
-    line-height: 1.0;
-    margin-bottom: 20px;
-  }
-
-  .page-sub {
-    font-family: var(--mono);
-    font-size: 14px;
-    color: var(--text-dim);
-    max-width: 560px;
-    line-height: 1.8;
-  }
-
-  .section {
-    padding: 60px 80px;
-  }
-  .section + .section {
-    border-top: 1px solid var(--border);
-  }
-
-  .section-label {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-dim);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-bottom: 32px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .section-label::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  .materials-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 2px;
-    background: var(--border);
-  }
-
-  .mat-card {
-    background: var(--surface);
-    padding: 28px 24px;
-    position: relative;
-  }
-
-  .mat-badge {
-    display: inline-block;
-    padding: 3px 8px;
-    border-radius: 2px;
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 14px;
-  }
-  .mat-badge.pla { background: rgba(79,195,247,0.12); color: var(--sky); }
-  .mat-badge.petg { background: rgba(151,43,80,0.12); color: var(--crimson); }
-  .mat-badge.tpu { background: rgba(99,53,86,0.2); color: #c083a0; }
-  .mat-badge.abs { background: rgba(46,63,92,0.3); color: #7aa0c8; }
-
-  .mat-name {
-    font-size: 20px;
-    font-weight: 700;
-    margin-bottom: 8px;
-  }
-  .mat-desc {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text-dim);
-    line-height: 1.6;
-  }
-
-  .caps-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 16px;
-  }
-
-  .cap-item {
-    display: flex;
-    gap: 16px;
-    padding: 20px 24px;
-    background: var(--surface);
-    border-radius: 4px;
-    border: 1px solid var(--border);
-    transition: border-color 0.2s;
-  }
-  .cap-item:hover { border-color: rgba(151,43,80,0.3); }
-
-  .cap-num {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--crimson);
-    opacity: 0.7;
-    min-width: 28px;
-    padding-top: 2px;
-  }
-
-  .cap-text strong {
-    display: block;
-    font-size: 15px;
-    font-weight: 700;
-    margin-bottom: 4px;
-    letter-spacing: -0.3px;
-  }
-  .cap-text p {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text-dim);
-    line-height: 1.5;
-  }
-
-  .elec-hero::after {
-    background: linear-gradient(90deg, transparent, rgba(79,195,247,0.04));
-  }
-
-  .projects-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 2px;
-    background: var(--border);
-  }
-
-  .proj-card {
-    background: var(--surface);
-    padding: 36px 32px;
-    position: relative;
-    overflow: hidden;
-    transition: background 0.2s;
-  }
-  .proj-card:hover { background: var(--surface2); }
-
-  .proj-card::after {
-    content: attr(data-num);
-    position: absolute;
-    bottom: 20px;
-    right: 24px;
-    font-family: var(--mono);
-    font-size: 60px;
-    font-weight: 800;
-    color: rgba(79,195,247,0.04);
-    line-height: 1;
-  }
-
-  .proj-tags {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-  }
-
-  .proj-tag {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--sky);
-    border: 1px solid rgba(79,195,247,0.2);
-    padding: 2px 8px;
-    border-radius: 2px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-
-  .proj-title {
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 12px;
-    letter-spacing: -0.5px;
-  }
-  .proj-desc {
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--text-dim);
-    line-height: 1.7;
-  }
-
-  .specs-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-family: var(--mono);
-    font-size: 13px;
-  }
-  .specs-table tr {
-    border-bottom: 1px solid var(--border);
-  }
-  .specs-table tr:last-child { border-bottom: none; }
-  .specs-table td {
-    padding: 14px 0;
-    vertical-align: top;
-  }
-  .specs-table td:first-child {
-    color: var(--text-dim);
-    width: 40%;
-    padding-right: 24px;
-    text-transform: uppercase;
-    font-size: 11px;
-    letter-spacing: 0.08em;
-  }
-  .specs-table td:last-child { color: var(--text); }
-
-  .contacts-layout {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    min-height: calc(100vh - 64px - 200px);
-  }
-
-  .contacts-left {
-    padding: 80px;
-    border-right: 1px solid var(--border);
-  }
-
-  .contacts-right {
-    padding: 80px;
-  }
-
-  .contact-list {
-    list-style: none;
-    margin-top: 48px;
-  }
-  .contact-list li {
-    display: flex;
-    gap: 20px;
-    padding: 24px 0;
-    border-bottom: 1px solid var(--border);
-    align-items: flex-start;
-  }
-  .contact-list li:first-child { border-top: 1px solid var(--border); }
-
-  .ci-icon {
-    width: 40px;
-    height: 40px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-
-  .ci-label {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 4px;
-  }
-  .ci-value {
-    font-size: 15px;
-    font-weight: 600;
-    letter-spacing: -0.3px;
-    color: var(--text);
-  }
-  .ci-value a { color: inherit; text-decoration: none; }
-  .ci-value a:hover { color: var(--sky); }
-
-  .form-group {
-    margin-bottom: 20px;
-  }
-  .form-label {
-    display: block;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 8px;
-  }
-  .form-input,
-  .form-select,
-  .form-textarea {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 12px 16px;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .form-input:focus,
-  .form-select:focus,
-  .form-textarea:focus {
-    border-color: rgba(79,195,247,0.4);
-  }
-  .form-select {
-    appearance: none;
-    cursor: pointer;
-  }
-  .form-textarea {
-    resize: vertical;
-    min-height: 120px;
-    line-height: 1.6;
-  }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-
-  footer {
-    padding: 32px 80px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .footer-brand {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text-dim);
-  }
-  .footer-brand strong { color: var(--text); }
-  .footer-copy {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-dim);
-    opacity: 0.5;
-  }
-
-  /* ── ANIMATIONS ── */
-  .fade-in {
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeUp 0.6s ease forwards;
-  }
-  @keyframes fadeUp {
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .fade-in:nth-child(1) { animation-delay: 0.1s; }
-  .fade-in:nth-child(2) { animation-delay: 0.2s; }
-  .fade-in:nth-child(3) { animation-delay: 0.3s; }
-  .fade-in:nth-child(4) { animation-delay: 0.4s; }
-  .fade-in:nth-child(5) { animation-delay: 0.5s; }
-
-  /* Scanline effect on hero */
-  .hero::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.015) 2px,
-      rgba(0,0,0,0.015) 4px
-    );
-    pointer-events: none;
-  }
-
-  /* ── RESPONSIVE ── */
-  @media (max-width: 900px) {
-    nav { padding: 0 20px; }
-    .hero-content { padding: 60px 24px; max-width: 100%; }
-    .hero-visual { display: none; }
-    .page-hero, .section { padding: 48px 24px; }
-    .stats-row { padding: 40px 24px; flex-wrap: wrap; }
-    .stat { border-right: none; border-bottom: 1px solid var(--border); flex: 0 0 50%; }
-    .contacts-layout { grid-template-columns: 1fr; }
-    .contacts-left, .contacts-right { padding: 48px 24px; border-right: none; }
-    .form-row { grid-template-columns: 1fr; }
-    footer { padding: 24px; flex-direction: column; gap: 12px; text-align: center; }
-    .services-strip { padding: 0; }
-  }
-
-  /* Hexagon decoration */
-  .hex-deco {
-    position: absolute;
-    opacity: 0.04;
-    pointer-events: none;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TambuTech — Electronics · 3D Print</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --navy: #1c2331;
+      --navy2: #2e3f5c;
+      --crimson: #972b50;
+      --crimson-light: #c0395f;
+      --sky: #4fc3f7;
+      --sky-dim: #99c4fe60;
+      --bg: #0e1118;
+      --surface: #151b27;
+      --surface2: #1a2234;
+      --text: #e8edf5;
+      --text-dim: #8a9ab8;
+      --border: rgba(79,195,247,0.12);
+      --mono: 'DM Mono', monospace;
+      --sans: 'Syne', sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow-x: hidden;
+    }
+
+    img,
+    svg,
+    video,
+    canvas {
+      max-width: 100%;
+      height: auto;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      height: 64px;
+      background: rgba(14,17,24,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      border: none;
+      background: transparent;
+    }
+
+    .nav-logo-img {
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+    }
+
+    .nav-brand {
+      font-family: var(--sans);
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: -0.5px;
+      white-space: nowrap;
+    }
+
+    .nav-brand span:first-child {
+      color: rgba(153,196,254,0.85);
+    }
+
+    .nav-brand span:last-child {
+      color: var(--crimson);
+      font-weight: 400;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 8px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-dim);
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 4px;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: inline-block;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--sky);
+      border-color: var(--border);
+      background: rgba(79,195,247,0.06);
+    }
+
+    .nav-toggle {
+      display: none;
+      width: 42px;
+      height: 42px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+
+    .nav-toggle span {
+      width: 20px;
+      height: 2px;
+      background: var(--text);
+      border-radius: 10px;
+      transition: all 0.25s ease;
+    }
+
+    .nav-toggle.open span:nth-child(1) {
+      transform: translateY(7px) rotate(45deg);
+    }
+
+    .nav-toggle.open span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .nav-toggle.open span:nth-child(3) {
+      transform: translateY(-7px) rotate(-45deg);
+    }
+
+    .page {
+      display: none;
+      min-height: 100vh;
+      padding-top: 64px;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .hero {
+      position: relative;
+      min-height: calc(100vh - 64px);
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 70% at 70% 50%, rgba(46,63,92,0.4) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 20% 80%, rgba(151,43,80,0.15) 0%, transparent 50%),
+        radial-gradient(ellipse 50% 50% at 80% 10%, rgba(79,195,247,0.08) 0%, transparent 50%);
+    }
+
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(79,195,247,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,195,247,0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      padding: 80px;
+      max-width: 700px;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--sky);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      padding: 6px 14px;
+      border: 1px solid rgba(79,195,247,0.25);
+      border-radius: 2px;
+      background: rgba(79,195,247,0.05);
+    }
+
+    .hero-tag::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--sky);
+      animation: blink 2s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes blink {
+      0%,100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+
+    .hero-h1 {
+      font-size: clamp(48px, 7vw, 90px);
+      font-weight: 800;
+      line-height: 0.95;
+      letter-spacing: -3px;
+      margin-bottom: 24px;
+    }
+
+    .hero-h1 .line1 {
+      color: rgba(153,196,254,0.85);
+      display: block;
+    }
+
+    .hero-h1 .line2 {
+      color: var(--crimson);
+      font-weight: 400;
+      display: block;
+      letter-spacing: -2px;
+    }
+
+    .hero-sub {
+      font-family: var(--mono);
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.8;
+      max-width: 480px;
+      margin-bottom: 48px;
+    }
+
+    .hero-ctas {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary,
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 14px 28px;
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .btn-primary {
+      background: var(--crimson);
+      color: #fff;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background: var(--crimson-light);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(151,43,80,0.4);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--sky);
+      border: 1px solid rgba(79,195,247,0.3);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(79,195,247,0.08);
+      border-color: var(--sky);
+    }
+
+    .hero-visual {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .hero-logo-wrap {
+      width: min(420px, 45vw);
+      animation: float 6s ease-in-out infinite;
+      filter: drop-shadow(0 0 60px rgba(79,195,247,0.15));
+    }
+
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-16px); }
+    }
+
+    .services-strip {
+      padding: 80px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2px;
+      background: var(--border);
+    }
+
+    .service-card {
+      background: var(--surface);
+      padding: 48px 40px;
+      cursor: pointer;
+      transition: background 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .service-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--sky), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .service-card:hover {
+      background: var(--surface2);
+    }
+
+    .service-card:hover::before {
+      opacity: 1;
+    }
+
+    .service-card:nth-child(2)::before {
+      background: linear-gradient(90deg, transparent, var(--crimson), transparent);
+    }
+
+    .sc-num {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--sky);
+      letter-spacing: 0.1em;
+      margin-bottom: 24px;
+      opacity: 0.6;
+    }
+
+    .service-card:nth-child(2) .sc-num {
+      color: var(--crimson);
+    }
+
+    .sc-icon {
+      font-size: 40px;
+      margin-bottom: 20px;
+      display: block;
+    }
+
+    .sc-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    .sc-desc {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.7;
+    }
+
+    .sc-arrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--sky);
+      margin-top: 28px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      opacity: 0;
+      transform: translateX(-8px);
+      transition: all 0.2s;
+    }
+
+    .service-card:nth-child(2) .sc-arrow {
+      color: var(--crimson);
+    }
+
+    .service-card:hover .sc-arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .stats-row {
+      padding: 60px 80px;
+      display: flex;
+      gap: 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stat {
+      flex: 1;
+      padding: 24px 40px;
+      border-right: 1px solid var(--border);
+    }
+
+    .stat:last-child {
+      border-right: none;
+    }
+
+    .stat-val {
+      font-size: 44px;
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .stat-val span {
+      color: var(--crimson);
+    }
+
+    .stat-label {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .page-hero {
+      padding: 80px 80px 60px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-hero::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 40%;
+      background: linear-gradient(90deg, transparent, rgba(151,43,80,0.04));
+      pointer-events: none;
+    }
+
+    .page-tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--crimson);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .page-tag::before {
+      content: '';
+      width: 32px;
+      height: 1px;
+      background: currentColor;
+      flex-shrink: 0;
+    }
+
+    .page-h1 {
+      font-size: clamp(36px, 5vw, 64px);
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: 20px;
+    }
+
+    .page-sub {
+      font-family: var(--mono);
+      font-size: 14px;
+      color: var(--text-dim);
+      max-width: 560px;
+      line-height: 1.8;
+    }
+
+    .section {
+      padding: 60px 80px;
+    }
+
+    .section + .section {
+      border-top: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .materials-grid,
+    .projects-grid,
+    .steps-grid {
+      display: grid;
+      gap: 2px;
+      background: var(--border);
+    }
+
+    .materials-grid {
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+
+    .projects-grid {
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    }
+
+    .steps-grid {
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+
+    .mat-card,
+    .proj-card,
+    .step-card {
+      background: var(--surface);
+      position: relative;
+    }
+
+    .mat-card {
+      padding: 28px 24px;
+    }
+
+    .mat-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 2px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .mat-badge.pla {
+      background: rgba(79,195,247,0.12);
+      color: var(--sky);
+    }
+
+    .mat-badge.petg {
+      background: rgba(151,43,80,0.12);
+      color: var(--crimson);
+    }
+
+    .mat-badge.tpu {
+      background: rgba(99,53,86,0.2);
+      color: #c083a0;
+    }
+
+    .mat-badge.abs {
+      background: rgba(46,63,92,0.3);
+      color: #7aa0c8;
+    }
+
+    .mat-name {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .mat-desc {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    .caps-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .cap-item {
+      display: flex;
+      gap: 16px;
+      padding: 20px 24px;
+      background: var(--surface);
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      transition: border-color 0.2s;
+    }
+
+    .cap-item:hover {
+      border-color: rgba(151,43,80,0.3);
+    }
+
+    .cap-num {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--crimson);
+      opacity: 0.7;
+      min-width: 28px;
+      padding-top: 2px;
+    }
+
+    .cap-text strong {
+      display: block;
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      letter-spacing: -0.3px;
+    }
+
+    .cap-text p {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    .step-card {
+      padding: 32px 24px;
+      text-align: center;
+    }
+
+    .step-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+
+    .step-num {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--crimson);
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+
+    .step-title {
+      font-weight: 700;
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+
+    .step-desc {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    .elec-hero::after {
+      background: linear-gradient(90deg, transparent, rgba(79,195,247,0.04));
+    }
+
+    .proj-card {
+      padding: 36px 32px;
+      overflow: hidden;
+      transition: background 0.2s;
+    }
+
+    .proj-card:hover {
+      background: var(--surface2);
+    }
+
+    .proj-card::after {
+      content: attr(data-num);
+      position: absolute;
+      bottom: 20px;
+      right: 24px;
+      font-family: var(--mono);
+      font-size: 60px;
+      font-weight: 800;
+      color: rgba(79,195,247,0.04);
+      line-height: 1;
+    }
+
+    .proj-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .proj-tag {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--sky);
+      border: 1px solid rgba(79,195,247,0.2);
+      padding: 2px 8px;
+      border-radius: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .proj-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    .proj-desc {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.7;
+    }
+
+    .tech-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+
+    .tech-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+    }
+
+    .specs-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--mono);
+      font-size: 13px;
+    }
+
+    .specs-table tr {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .specs-table tr:last-child {
+      border-bottom: none;
+    }
+
+    .specs-table td {
+      padding: 14px 0;
+      vertical-align: top;
+    }
+
+    .specs-table td:first-child {
+      color: var(--text-dim);
+      width: 40%;
+      padding-right: 24px;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+    }
+
+    .specs-table td:last-child {
+      color: var(--text);
+    }
+
+    .cta-row {
+      padding: 40px 80px;
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .contacts-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: calc(100vh - 64px - 200px);
+    }
+
+    .contacts-left {
+      padding: 80px;
+      border-right: 1px solid var(--border);
+    }
+
+    .contacts-right {
+      padding: 80px;
+    }
+
+    .contact-intro {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.8;
+      max-width: 380px;
+    }
+
+    .contact-list {
+      list-style: none;
+      margin-top: 48px;
+    }
+
+    .contact-list li {
+      display: flex;
+      gap: 20px;
+      padding: 24px 0;
+      border-bottom: 1px solid var(--border);
+      align-items: flex-start;
+    }
+
+    .contact-list li:first-child {
+      border-top: 1px solid var(--border);
+    }
+
+    .ci-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .ci-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 4px;
+    }
+
+    .ci-value {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      color: var(--text);
+    }
+
+    .ci-value a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .ci-value a:hover {
+      color: var(--sky);
+    }
+
+    .social-block {
+      margin-top: 40px;
+    }
+
+    .social-label,
+    .form-heading {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .social-label {
+      margin-bottom: 16px;
+    }
+
+    .social-links {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .social-links a {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .social-links a:hover {
+      border-color: rgba(79,195,247,0.4);
+      color: var(--sky);
+    }
+
+    .form-heading {
+      margin-bottom: 32px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      border-color: rgba(79,195,247,0.4);
+    }
+
+    .form-select {
+      appearance: none;
+      cursor: pointer;
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 120px;
+      line-height: 1.6;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    footer {
+      padding: 32px 80px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .footer-brand {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .footer-brand strong {
+      color: var(--text);
+    }
+
+    .footer-copy {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      opacity: 0.5;
+    }
+
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 0.6s ease forwards;
+    }
+
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-in:nth-child(1) { animation-delay: 0.1s; }
+    .fade-in:nth-child(2) { animation-delay: 0.2s; }
+    .fade-in:nth-child(3) { animation-delay: 0.3s; }
+    .fade-in:nth-child(4) { animation-delay: 0.4s; }
+    .fade-in:nth-child(5) { animation-delay: 0.5s; }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.015) 2px,
+        rgba(0,0,0,0.015) 4px
+      );
+      pointer-events: none;
+    }
+
+    @media (max-width: 1100px) {
+      nav {
+        padding: 0 28px;
+      }
+
+      .hero-content {
+        padding: 70px 48px;
+      }
+
+      .page-hero,
+      .section,
+      .cta-row {
+        padding-left: 48px;
+        padding-right: 48px;
+      }
+
+      .services-strip {
+        padding: 48px;
+      }
+
+      .contacts-left,
+      .contacts-right {
+        padding: 56px 48px;
+      }
+
+      .hero-logo-wrap {
+        width: min(360px, 42vw);
+      }
+    }
+
+    @media (max-width: 900px) {
+      nav {
+        height: 64px;
+        padding: 0 18px;
+      }
+
+      .nav-logo-img {
+        width: 32px;
+        height: 32px;
+      }
+
+      .nav-brand {
+        font-size: 16px;
+      }
+
+      .nav-toggle {
+        display: flex;
+      }
+
+      .nav-links {
+        position: fixed;
+        top: 64px;
+        left: 0;
+        right: 0;
+        display: none;
+        flex-direction: column;
+        gap: 0;
+        padding: 12px 18px 18px;
+        background: rgba(14,17,24,0.98);
+        backdrop-filter: blur(18px);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .nav-links.open {
+        display: flex;
+      }
+
+      .nav-links li,
+      .nav-links a {
+        width: 100%;
+      }
+
+      .nav-links a {
+        display: block;
+        padding: 14px 12px;
+        font-size: 12px;
+        border-radius: 6px;
+      }
+
+      .hero {
+        min-height: auto;
+        padding: 40px 0 60px;
+      }
+
+      .hero-content {
+        padding: 48px 24px;
+        max-width: 100%;
+      }
+
+      .hero-h1 {
+        font-size: clamp(44px, 14vw, 72px);
+        letter-spacing: -2px;
+      }
+
+      .hero-sub {
+        font-size: 13px;
+        max-width: 100%;
+      }
+
+      .hero-ctas,
+      .cta-row {
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .btn-primary,
+      .btn-ghost {
+        width: 100%;
+      }
+
+      .hero-visual {
+        display: none;
+      }
+
+      .services-strip {
+        padding: 0;
+        grid-template-columns: 1fr;
+      }
+
+      .service-card {
+        padding: 36px 24px;
+      }
+
+      .stats-row {
+        padding: 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .stat {
+        padding: 28px 24px;
+        border-right: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .stat:nth-child(2),
+      .stat:nth-child(4) {
+        border-right: none;
+      }
+
+      .stat-val {
+        font-size: 34px;
+      }
+
+      .page-hero,
+      .section,
+      .cta-row {
+        padding: 44px 24px;
+      }
+
+      .page-h1 {
+        font-size: clamp(38px, 12vw, 56px);
+      }
+
+      .page-sub {
+        font-size: 13px;
+      }
+
+      .materials-grid,
+      .projects-grid,
+      .caps-list,
+      .steps-grid,
+      .tech-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .cap-item {
+        padding: 20px;
+      }
+
+      .contacts-layout {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+
+      .contacts-left,
+      .contacts-right {
+        padding: 44px 24px;
+      }
+
+      .contacts-left {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+
+      .specs-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+
+      .specs-table tbody {
+        display: table;
+        width: 100%;
+      }
+
+      footer {
+        padding: 24px;
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 520px) {
+      body {
+        font-size: 15px;
+      }
+
+      nav {
+        padding: 0 14px;
+      }
+
+      .nav-brand {
+        font-size: 15px;
+      }
+
+      .hero-content {
+        padding: 40px 18px;
+      }
+
+      .hero-tag {
+        font-size: 10px;
+        padding: 6px 10px;
+        margin-bottom: 22px;
+      }
+
+      .hero-h1 {
+        font-size: clamp(42px, 17vw, 60px);
+        line-height: 0.95;
+        letter-spacing: -1.5px;
+      }
+
+      .hero-sub {
+        font-size: 12px;
+        line-height: 1.7;
+        margin-bottom: 34px;
+      }
+
+      .page-hero,
+      .section,
+      .cta-row {
+        padding: 38px 18px;
+      }
+
+      .page-h1 {
+        font-size: clamp(36px, 15vw, 50px);
+        letter-spacing: -1.5px;
+      }
+
+      .service-card,
+      .mat-card,
+      .proj-card,
+      .step-card {
+        padding: 30px 22px;
+      }
+
+      .stats-row {
+        grid-template-columns: 1fr;
+      }
+
+      .stat {
+        border-right: none !important;
+      }
+
+      .stat-val {
+        font-size: 32px;
+      }
+
+      .contacts-left,
+      .contacts-right {
+        padding: 38px 18px;
+      }
+
+      .contact-list li {
+        gap: 14px;
+      }
+
+      .ci-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+      }
+
+      .ci-value {
+        font-size: 14px;
+        word-break: break-word;
+      }
+
+      .social-links {
+        flex-direction: column;
+      }
+
+      .social-links a {
+        justify-content: center;
+      }
+
+      .form-input,
+      .form-select,
+      .form-textarea {
+        font-size: 12px;
+        padding: 12px 14px;
+      }
+
+      .btn-primary,
+      .btn-ghost {
+        padding: 14px 20px;
+        font-size: 12px;
+      }
+
+      footer {
+        padding: 22px 18px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .nav-brand {
+        font-size: 14px;
+      }
+
+      .nav-logo-img {
+        width: 30px;
+        height: 30px;
+      }
+
+      .hero-h1 {
+        font-size: 40px;
+      }
+
+      .page-h1 {
+        font-size: 34px;
+      }
+
+      .sc-title,
+      .proj-title {
+        font-size: 20px;
+      }
+
+      .mat-name {
+        font-size: 18px;
+      }
+    }
+
+    @media (hover: none) {
+      .service-card .sc-arrow {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      .btn-primary:hover,
+      .btn-ghost:hover {
+        transform: none;
+      }
+    }
+  </style>
 </head>
+
 <body>
+  <nav>
+    <button class="nav-logo" onclick="showPage('home')" aria-label="Vai alla home">
+      <img class="nav-logo-img" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcKICAgd2lkdGg9IjEwMCUiCiAgIHZpZXdCb3g9IjAgMCA2ODAgNTIwIgogICByb2xlPSJpbWciCiAgIHN0eWxlPSIiCiAgIHZlcnNpb249IjEuMSIKICAgaWQ9InN2ZzE5IgogICB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgIHhtbG5zOnN2Zz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxwb2x5Z29uCiAgICAgcG9pbnRzPSIzNDAsNzAgNDM4LDEyNyA0MzgsMjQxIDM0MCwyOTggMjQyLDI0MSAyNDIsMTI3IgogICAgIHN0eWxlPSJmaWxsOiMxYzIzMzEiIC8+CiAgPHBvbHlnb24KICAgICBwb2ludHM9IjQzOCwyNDEgMzQwLDI5OCAyNDIsMjQxIDI0MiwxMjcgMzQwLDcwIDQzOCwxMjcgIgogICAgIHN0eWxlPSJmaWxsOiMyZTNmNWMiCiAgICAgdHJhbnNmb3JtPSJtYXRyaXgoMC45NjksMCwwLDAuOTc0LDEwLjQsNC44KSIgLz4KICA8cmVjdCB4PSIyNzIiIHk9IjE1NCIgd2lkdGg9IjEzNiIgaGVpZ2h0PSIyMiIgcng9IjMiIGZpbGw9IiNmMGY2ZmYiIC8+CiAgPGNpcmNsZSBjeD0iMjg4IiBjeT0iMTY1IiByPSI0IiBmaWxsPSIjMmUzZjVjIiAvPgogIDxjaXJjbGUgY3g9IjMwNCIgY3k9IjE2NSIgcj0iNCIgZmlsbD0iIzJlM2Y1YyIgLz4KICA8Y2lyY2xlIGN4PSIzNzYiIGN5PSIxNjUiIHI9IjQiIGZpbGw9IiMyZTNmNWMiIC8+CiAgPGNpcmNsZSBjeD0iMzkyIiBjeT0iMTY1IiByPSI0IiBmaWxsPSIjMmUzZjVjIiAvPgogIDxyZWN0IHg9IjMyNy4zIiB5PSIxNzciIHdpZHRoPSIyNS40IiBoZWlnaHQ9IjUyIiByeD0iMi4zIiBmaWxsPSIjZjBmNmZmIiAvPgogIDxyZWN0IHg9IjMyNC4wIiB5PSIxODQuOSIgd2lkdGg9IjMxLjkiIGhlaWdodD0iMjguNyIgcng9IjIuOSIgZmlsbD0iIzk3MmI1MCIgLz4KICA8cmVjdCB4PSIzMjQuMCIgeT0iMTkzLjkiIHdpZHRoPSIzMS45IiBoZWlnaHQ9IjI4LjciIHJ4PSIyLjkiIGZpbGw9IiM5NzJiNTAiIC8+CiAgPGNpcmNsZSBjeD0iMzQwLjIiIGN5PSIyNTYuOCIgcj0iNS41IiBmaWxsPSIjZjBmNmZmIiAvPgogIDxyZWN0IHg9IjQwMCIgeT0iODgiIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCIgcng9IjMiIGZpbGw9IiM5NzJiNTAiIC8+CiAgPGNpcmNsZSBjeD0iMjY0IiBjeT0iMjU0IiByPSI1IiBmaWxsPSIjOTcyYjUwIiAvPgogIDx0ZXh0IHg9IjM0MCIgeT0iMzY4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj48dHNwYW4gc3R5bGU9ImZvbnQtd2VpZ2h0OjkwMDtmb250LXNpemU6NTBweDtmb250LWZhbWlseTonSGVsdmV0aWNhIE5ldWUnLEFyaWFsLHNhbnMtc2VyaWY7ZmlsbDojOTljNGZlO2ZpbGwtb3BhY2l0eTowLjYiPlRhbWJ1PC90c3Bhbj48dHNwYW4gc3R5bGU9ImZvbnQtd2VpZ2h0OjIwMDtmb250LXNpemU6NTBweDtmb250LWZhbWlseTonSGVsdmV0aWNhIE5ldWUnLEFyaWFsLHNhbnMtc2VyaWY7ZmlsbDojOTcyYjUwIj5UZWNoPC90c3Bhbj48L3RleHQ+Cjwvc3ZnPgo=" alt="TambuTech Logo">
+      <div class="nav-brand"><span>Tambu</span><span>Tech</span></div>
+    </button>
 
-<!-- NAVIGATION -->
-<nav>
-  <a class="nav-logo" onclick="showPage('home')">
-    <img class="nav-logo-img" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcKICAgd2lkdGg9IjEwMCUiCiAgIHZpZXdCb3g9IjAgMCA2ODAgNTIwIgogICByb2xlPSJpbWciCiAgIHN0eWxlPSIiCiAgIHZlcnNpb249IjEuMSIKICAgaWQ9InN2ZzE5IgogICB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgIHhtbG5zOnN2Zz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxwb2x5Z29uCiAgICAgcG9pbnRzPSIzNDAsNzAgNDM4LDEyNyA0MzgsMjQxIDM0MCwyOTggMjQyLDI0MSAyNDIsMTI3IgogICAgIHN0eWxlPSJmaWxsOiMxYzIzMzEiIC8+CiAgPHBvbHlnb24KICAgICBwb2ludHM9IjQzOCwyNDEgMzQwLDI5OCAyNDIsMjQxIDI0MiwxMjcgMzQwLDcwIDQzOCwxMjcgIgogICAgIHN0eWxlPSJmaWxsOiMyZTNmNWMiCiAgICAgdHJhbnNmb3JtPSJtYXRyaXgoMC45NjksMCwwLDAuOTc0LDEwLjQsNC44KSIgLz4KICA8cmVjdCB4PSIyNzIiIHk9IjE1NCIgd2lkdGg9IjEzNiIgaGVpZ2h0PSIyMiIgcng9IjMiIGZpbGw9IiNmMGY2ZmYiIC8+CiAgPGNpcmNsZSBjeD0iMjg4IiBjeT0iMTY1IiByPSI0IiBmaWxsPSIjMmUzZjVjIiAvPgogIDxjaXJjbGUgY3g9IjMwNCIgY3k9IjE2NSIgcj0iNCIgZmlsbD0iIzJlM2Y1YyIgLz4KICA8Y2lyY2xlIGN4PSIzNzYiIGN5PSIxNjUiIHI9IjQiIGZpbGw9IiMyZTNmNWMiIC8+CiAgPGNpcmNsZSBjeD0iMzkyIiBjeT0iMTY1IiByPSI0IiBmaWxsPSIjMmUzZjVjIiAvPgogIDxyZWN0IHg9IjMyNy4zIiB5PSIxNzciIHdpZHRoPSIyNS40IiBoZWlnaHQ9IjUyIiByeD0iMi4zIiBmaWxsPSIjZjBmNmZmIiAvPgogIDxyZWN0IHg9IjMyNC4wIiB5PSIxODQuOSIgd2lkdGg9IjMxLjkiIGhlaWdodD0iMjguNyIgcng9IjIuOSIgZmlsbD0iIzk3MmI1MCIgLz4KICA8cmVjdCB4PSIzMjQuMCIgeT0iMTkzLjkiIHdpZHRoPSIzMS45IiBoZWlnaHQ9IjI4LjciIHJ4PSIyLjkiIGZpbGw9IiM5NzJiNTAiIC8+CiAgPGNpcmNsZSBjeD0iMzQwLjIiIGN5PSIyNTYuOCIgcj0iNS41IiBmaWxsPSIjZjBmNmZmIiAvPgogIDxyZWN0IHg9IjQwMCIgeT0iODgiIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCIgcng9IjMiIGZpbGw9IiM5NzJiNTAiIC8+CiAgPGNpcmNsZSBjeD0iMjY0IiBjeT0iMjU0IiByPSI1IiBmaWxsPSIjOTcyYjUwIiAvPgogIDx0ZXh0IHg9IjM0MCIgeT0iMzY4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj48dHNwYW4gc3R5bGU9ImZvbnQtd2VpZ2h0OjkwMDtmb250LXNpemU6NTBweDtmb250LWZhbWlseTonSGVsdmV0aWNhIE5ldWUnLEFyaWFsLHNhbnMtc2VyaWY7ZmlsbDojOTljNGZlO2ZpbGwtb3BhY2l0eTowLjYiPlRhbWJ1PC90c3Bhbj48dHNwYW4gc3R5bGU9ImZvbnQtd2VpZ2h0OjIwMDtmb250LXNpemU6NTBweDtmb250LWZhbWlseTonSGVsdmV0aWNhIE5ldWUnLEFyaWFsLHNhbnMtc2VyaWY7ZmlsbDojOTcyYjUwIj5UZWNoPC90c3Bhbj48L3RleHQ+Cjwvc3ZnPgo=" alt="TambuTech Logo">
-    <div class="nav-brand"><span>Tambu</span><span>Tech</span></div>
-  </a>
-  <ul class="nav-links">
-    <li><a href="#" onclick="showPage('home')" id="nav-home" class="active">Home</a></li>
-    <li><a href="#" onclick="showPage('print3d')" id="nav-print3d">Stampa 3D</a></li>
-    <li><a href="#" onclick="showPage('electronics')" id="nav-electronics">Elettronica</a></li>
-    <li><a href="#" onclick="showPage('contacts')" id="nav-contacts">Contatti</a></li>
-  </ul>
-</nav>
+    <button class="nav-toggle" onclick="toggleMenu()" aria-label="Apri menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
 
-<!-- ══════════════════════════════════
-     PAGE: HOME
-══════════════════════════════════ -->
-<div id="page-home" class="page active">
+    <ul class="nav-links">
+      <li><a onclick="showPage('home')" id="nav-home" class="active">Home</a></li>
+      <li><a onclick="showPage('print3d')" id="nav-print3d">Stampa 3D</a></li>
+      <li><a onclick="showPage('electronics')" id="nav-electronics">Elettronica</a></li>
+      <li><a onclick="showPage('contacts')" id="nav-contacts">Contatti</a></li>
+    </ul>
+  </nav>
 
-  <!-- Hero -->
-  <section class="hero">
-    <div class="hero-bg"></div>
-    <div class="hero-grid"></div>
-    <div class="hero-content">
-      <div class="hero-tag fade-in">Electronics · 3D Print · Custom Projects</div>
-      <h1 class="hero-h1 fade-in">
-        <span class="line1">Tambu</span>
-        <span class="line2">Tech</span>
-      </h1>
-      <p class="hero-sub fade-in">
-        Prototipazione rapida con stampa 3D, progettazione di circuiti su Arduino 
-        e soluzioni elettroniche custom. Dal concept al prodotto finito.
-      </p>
-      <div class="hero-ctas fade-in">
-        <a class="btn-primary" onclick="showPage('contacts')">Richiedi un progetto →</a>
-        <a class="btn-ghost" onclick="showPage('print3d')">Scopri i servizi</a>
+  <div id="page-home" class="page active">
+    <section class="hero">
+      <div class="hero-bg"></div>
+      <div class="hero-grid"></div>
+
+      <div class="hero-content">
+        <div class="hero-tag fade-in">Electronics · 3D Print · Custom Projects</div>
+        <h1 class="hero-h1 fade-in">
+          <span class="line1">Tambu</span>
+          <span class="line2">Tech</span>
+        </h1>
+        <p class="hero-sub fade-in">
+          Prototipazione rapida con stampa 3D, progettazione di circuiti su Arduino e soluzioni elettroniche custom. Dal concept al prodotto finito.
+        </p>
+        <div class="hero-ctas fade-in">
+          <a class="btn-primary" onclick="showPage('contacts')">Richiedi un progetto →</a>
+          <a class="btn-ghost" onclick="showPage('print3d')">Scopri i servizi</a>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="hero-logo-wrap">
+          <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcKICAgd2lkdGg9IjEwMCUiCiAgIHZpZXdCb3g9IjAgMCA2ODAgNTIwIgogICByb2xlPSJpbWciCiAgIHZlcnNpb249IjEuMSIKICAgaWQ9InN2ZzE5IgogICB4bWxuczppbmtzY2FwZT0iaHR0cDovL3d3dy5pbmtzY2FwZS5vcmcvbmFtZXNwYWNlcy9pbmtzY2FwZSIKICAgeG1sbnM6c29kaXBvZGk9Imh0dHA6Ly9zb2RpcG9kaS5zb3VyY2Vmb3JnZS5uZXQvRFREL3NvZGlwb2RpLTAuZHRkIgogICB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgIHhtbG5zOnN2Zz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxwb2x5Z29uCiAgICAgcG9pbnRzPSIzNDAsNzAgNDM4LDEyNyA0MzgsMjQxIDM0MCwyOTggMjQyLDI0MSAyNDIsMTI3IgogICAgIGZpbGw9IiMwZDQ3YTEiCiAgICAgc3R5bGU9ImZpbGw6IzFjMjMzMTtzdHJva2U6bm9uZSIgLz4KICA8cG9seWdvbgogICAgIHBvaW50cz0iNDM4LDI0MSAzNDAsMjk4IDI0MiwyNDEgMjQyLDEyNyAzNDAsNzAgNDM4LDEyNyAiCiAgICAgZmlsbD0iIzBkNDdhMSIKICAgICBzdHlsZT0iZmlsbDojMmUzZjVjO3N0cm9rZTpub25lIgogICAgIHRyYW5zZm9ybT0ibWF0cml4KDAuOTY5Mzg3NzYsMCwwLDAuOTczNjg0MjEsMTAuNDA4MTYyLDQuODQyMTA1MykiIC8+CiAgPHJlY3QgeD0iNDI0IiB5PSIxNzciIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgcng9IjEiIGZpbGw9IiNmMGY2ZmYiIC8+CiAgPHJlY3QgeD0iMjU4IiB5PSIxMjkiIHdpZHRoPSIyMiIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0iIzRmYzNmNyIgb3BhY2l0eT0iMC41IiAvPgogIDxyZWN0IHg9IjI1OCIgeT0iMTM4IiB3aWR0aD0iMTQiIGhlaWdodD0iNCIgcng9IjIiIGZpbGw9IiM0ZmMzZjciIG9wYWNpdHk9IjAuNSIgLz4KICA8cmVjdCB4PSI0MDAiIHk9IjEyOSIgd2lkdGg9IjIyIiBoZWlnaHQ9IjQiIHJ4PSIyIiBmaWxsPSIjNGZjM2Y3IiBvcGFjaXR5PSIwLjUiIC8+CiAgPHJlY3QgeD0iNDA4IiB5PSIxMzgiIHdpZHRoPSIxNCIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0iIzRmYzNmNyIgb3BhY2l0eT0iMC41IiAvPgogIDxyZWN0IHg9IjI3MiIgeT0iMTU0IiB3aWR0aD0iMTM2IiBoZWlnaHQ9IjIyIiByeD0iMyIgZmlsbD0iI2YwZjZmZiIgLz4KICA8Y2lyY2xlIGN4PSIyODgiIGN5PSIxNjUiIHI9IjQiIGZpbGw9IiMyZTNmNWMiIC8+CiAgPGNpcmNsZSBjeD0iMzkyIiBjeT0iMTY1IiByPSI0IiBmaWxsPSIjMmUzZjVjIiAvPgogIDxyZWN0IHg9IjM1MyIgeT0iMTg4IiB3aWR0aD0iOCIgaGVpZ2h0PSI0IiByeD0iMS4xNDMiIGZpbGw9IiM5NzJiNTAiIC8+CiAgPHJlY3QgeD0iMzUzIiB5PSIxOTciIHdpZHRoPSI4IiBoZWlnaHQ9IjQiIHJ4PSIxLjE0MyIgZmlsbD0iIzk3MmI1MCIgLz4KICA8cG9seWdvbiBwb2ludHM9IjM1MSwyMjggMzQ2LDI0OCAzMzQsMjQ4IDMyOSwyMjgiIGZpbGw9IiNmMGY2ZmYiIHRyYW5zZm9ybT0ibWF0cml4KDAuOTQ4NSwwLDAsMC45NDMxLDE3LjcwNSwxNS45NDIpIiAvPgogIDxjaXJjbGUgY3g9IjM0MC4yIiBjeT0iMjU2LjgiIHI9IjUuNSIgZmlsbD0iI2YwZjZmZiIgLz4KICA8cmVjdCB4PSI0MDAiIHk9Ijg4IiB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHJ4PSIzIiBmaWxsPSIjOTcyYjUwIiAvPgogIDxjaXJjbGUgY3g9IjI2NCIgY3k9IjI1NCIgcj0iNSIgZmlsbD0iIzk3MmI1MCIgLz4KICA8dGV4dCB4PSIzNDAiIHk9IjM2OCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+PHRzcGFuIHN0eWxlPSJmb250LXdlaWdodDo5MDA7Zm9udC1zaXplOjUwcHg7Zm9udC1mYW1pbHk6J0hlbHZldGljYSBOZXVlJyxBcmlhbCxzYW5zLXNlcmlmO2ZpbGw6Izk5YzRmZTtmaWxsLW9wYWNpdHk6MC41OTYiPlRhbWJ1PC90c3Bhbj48dHNwYW4gc3R5bGU9ImZvbnQtd2VpZ2h0OjIwMDtmb250LXNpemU6NTBweDtmb250LWZhbWlseTonSGVsdmV0aWNhIE5ldWUnLEFyaWFsLHNhbnMtc2VyaWY7ZmlsbDojOTcyYjUwIj5UZWNoPC90c3Bhbj48L3RleHQ+CiAgPHRleHQgeD0iMzQwIiB5PSI0MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIHN0eWxlPSJmaWxsOiM5NzJiNTA7Zm9udC1mYW1pbHk6J0hlbHZldGljYSBOZXVlJyxBcmlhbCxzYW5zLXNlcmlmO2ZvbnQtc2l6ZToxMHB4Ij5FTEVDVFJPWMKZIDI0OCAzRCBQUklOVDwvdGV4dD4KICA8cmVjdCB4PSIyNDYiIHk9IjE3NyIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiByeD0iMSIgZmlsbD0iI2YwZjZmZiIgLz4KICA8cmVjdCB4PSIyNDYiIHk9IjE4OSIgd2lkdGg9IjcuNSIgaGVpZ2h0PSI3LjUiIHJ4PSIwLjc1IiBmaWxsPSIjNjMzNTU2IiAvPgogIDxyZWN0IHg9IjMxOSIgeT0iMTg4IiB3aWR0aD0iOCIgaGVpZ2h0PSI0IiByeD0iMS4xNDMiIGZpbGw9IiM5NzJiNTAiIC8+CiAgPHJlY3QgeD0iMzE5IiB5PSIxOTciIHdpZHRoPSI4IiBoZWlnaHQ9IjQiIHJ4PSIxLjE0MyIgZmlsbD0iIzk3MmI1MCIgLz4KICA8cmVjdCB4PSIzMjQuMCIgeT0iMTg0LjkiIHdpZHRoPSIzMS45IiBoZWlnaHQ9IjI4LjciIHJ4PSIyLjkiIGZpbGw9IiM5NzJiNTAiIC8+CiAgPHJlY3QgeD0iMzI3LjMiIHk9IjE3NyIgd2lkdGg9IjI1LjQiIGhlaWdodD0iNTIiIHJ4PSIyLjMiIGZpbGw9IiNmMGY2ZmYiIC8+CiAgPHJlY3QgeD0iNDI2LjUiIHk9IjE4OSIgd2lkdGg9IjcuNSIgaGVpZ2h0PSI3LjUiIHJ4PSIwLjc1IiBmaWxsPSIjNjMzNTU2IiAvPgogIDxyZWN0IHg9IjI0NiIgeT0iMTc1IiB3aWR0aD0iNy41IiBoZWlnaHQ9IjcuNSIgcng9IjAuNzUiIGZpbGw9IiM2MzM1NTYiIC8+CiAgPHJlY3QgeD0iNDI2LjUiIHk9IjE3NSIgd2lkdGg9IjcuNSIgaGVpZ2h0PSI3LjUiIHJ4PSIwLjc1IiBmaWxsPSIjNjMzNTU2IiAvPgogIDxjaXJjbGUgY3g9IjM3NiIgY3k9IjE2NSIgcj0iNCIgZmlsbD0iIzJlM2Y1YyIgLz4KICA8Y2lyY2xlIGN4PSIzMDQiIGN5PSIxNjUiIHI9IjQiIGZpbGw9IiMyZTNmNWMiIC8+CiAgPHJlY3QgeD0iMzA0IiB5PSIxNDkiIHdpZHRoPSI3MiIgaGVpZ2h0PSI0IiByeD0iNi41IiBmaWxsPSIjOTcyYjUwIiAvPgogIDxyZWN0IHg9IjMwNCIgeT0iMTQ5IiB3aWR0aD0iMjIiIGhlaWdodD0iNCIgcng9IjIiIGZpbGw9IiM5NzJiNTAiIC8+CiAgPHJlY3QgeD0iMzU0IiB5PSIxNDkiIHdpZHRoPSIyMiIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0iIzk3MmI1MCIgLz4KICA8cmVjdCB4PSIzMzEuMSIgeT0iMTQ0IiB3aWR0aD0iMjIiIGhlaWdodD0iNCIgcng9IjIiIGZpbGw9IiM5NzJiNTAiIC8+CiAgPHJlY3QgeD0iMzI4IiB5PSIxNDQiIHdpZHRoPSIyMiIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0iIzk3MmI1MCIgLz4KICA8cmVjdCB4PSIzMTkiIHk9IjIwNiIgd2lkdGg9IjgiIGhlaWdodD0iNCIgcng9IjEuMTQzIiBmaWxsPSIjOTcyYjUwIiAvPgogIDxyZWN0IHg9IjMxOSIgeT0iMjE1IiB3aWR0aD0iOCIgaGVpZ2h0PSI0IiByeD0iMS4xNDMiIGZpbGw9IiM5NzJiNTAiIC8+CiAgPHJlY3QgeD0iMzI0LjAiIHk9IjE5My45IiB3aWR0aD0iMzEuOSIgaGVpZ2h0PSIyOC43IiByeD0iMi45IiBmaWxsPSIjOTcyYjUwIiAvPgogIDxyZWN0IHg9IjM1MyIgeT0iMjA2IiB3aWR0aD0iOCIgaGVpZ2h0PSI0IiByeD0iMS4xNDMiIGZpbGw9IiM5NzJiNTAiIC8+CiAgPHJlY3QgeD0iMzUzIiB5PSIyMTUiIHdpZHRoPSI4IiBoZWlnaHQ9IjQiIHJ4PSIxLjE0MyIgZmlsbD0iIzk3MmI1MCIgLz4KPC9zdmc+Cg==" alt="TambuTech">
+        </div>
+      </div>
+    </section>
+
+    <div class="services-strip">
+      <div class="service-card" onclick="showPage('print3d')">
+        <div class="sc-num">// 01</div>
+        <span class="sc-icon">🖨️</span>
+        <div class="sc-title">Stampa 3D</div>
+        <p class="sc-desc">Prototipazione rapida, parti custom, contenitori e componenti meccanici. PLA, PETG, TPU e ABS.</p>
+        <div class="sc-arrow">Scopri →</div>
+      </div>
+
+      <div class="service-card" onclick="showPage('electronics')">
+        <div class="sc-num">// 02</div>
+        <span class="sc-icon">⚡</span>
+        <div class="sc-title">Elettronica & Arduino</div>
+        <p class="sc-desc">Progettazione di circuiti, firmware personalizzato, sensori, automazione e IoT con Arduino.</p>
+        <div class="sc-arrow">Scopri →</div>
+      </div>
+
+      <div class="service-card" onclick="showPage('contacts')">
+        <div class="sc-num">// 03</div>
+        <span class="sc-icon">🔧</span>
+        <div class="sc-title">Progetti Custom</div>
+        <p class="sc-desc">Soluzioni integrate che combinano stampa 3D ed elettronica per un prodotto finito e funzionante.</p>
+        <div class="sc-arrow">Contattami →</div>
       </div>
     </div>
 
-    <!-- Floating logo -->
-    <div class="hero-visual">
-      <div class="hero-logo-wrap">
-        <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcKICAgd2lkdGg9IjEwMCUiCiAgIHZpZXdCb3g9IjAgMCA2ODAgNTIwIgogICByb2xlPSJpbWciCiAgIHZlcnNpb249IjEuMSIKICAgaWQ9InN2ZzE5IgogICB4bWxuczppbmtzY2FwZT0iaHR0cDovL3d3dy5pbmtzY2FwZS5vcmcvbmFtZXNwYWNlcy9pbmtzY2FwZSIKICAgeG1sbnM6c29kaXBvZGk9Imh0dHA6Ly9zb2RpcG9kaS5zb3VyY2Vmb3JnZS5uZXQvRFREL3NvZGlwb2RpLTAuZHRkIgogICB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgIHhtbG5zOnN2Zz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxwb2x5Z29uCiAgICAgcG9pbnRzPSIzNDAsNzAgNDM4LDEyNyA0MzgsMjQxIDM0MCwyOTggMjQyLDI0MSAyNDIsMTI3IgogICAgIGZpbGw9IiMwZDQ3YTEiCiAgICAgc3R5bGU9ImZpbGw6IzFjMjMzMTtzdHJva2U6bm9uZSIgLz4KICA8cG9seWdvbgogICAgIHBvaW50cz0iNDM4LDI0MSAzNDAsMjk4IDI0MiwyNDEgMjQyLDEyNyAzNDAsNzAgNDM4LDEyNyAiCiAgICAgZmlsbD0iIzBkNDdhMSIKICAgICBzdHlsZT0iZmlsbDojMmUzZjVjO3N0cm9rZTpub25lIgogICAgIHRyYW5zZm9ybT0ibWF0cml4KDAuOTY5Mzg3NzYsMCwwLDAuOTczNjg0MjEsMTAuNDA4MTYyLDQuODQyMTA1MykiIC8+CiAgPHJlY3QgeD0iNDI0IiB5PSIxNzciIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgcng9IjEiIGZpbGw9IiNmMGY2ZmYiIC8+CiAgPHJlY3QgeD0iMjU4IiB5PSIxMjkiIHdpZHRoPSIyMiIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0iIzRmYzNmNyIgb3BhY2l0eT0iMC41IiAvPgogIDxyZWN0IHg9IjI1OCIgeT0iMTM4IiB3aWR0aD0iMTQiIGhlaWdodD0iNCIgcng9IjIiIGZpbGw9IiM0ZmMzZjciIG9wYWNpdHk9IjAuNSIgLz4KICA8cmVjdCB4PSI0MDAiIHk9IjEyOSIgd2lkdGg9IjIyIiBoZWlnaHQ9IjQiIHJ4PSIyIiBmaWxsPSIjNGZjM2Y3IiBvcGFjaXR5PSIwLjUiIC8+CiAgPHJlY3QgeD0iNDA4IiB5PSIxMzgiIHdpZHRoPSIxNCIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0iIzRmYzNmNyIgb3BhY2l0eT0iMC41IiAvPgogIDxyZWN0IHg9IjI3MiIgeT0iMTU0IiB3aWR0aD0iMTM2IiBoZWlnaHQ9IjIyIiByeD0iMyIgZmlsbD0iI2YwZjZmZiIgLz4KICA8Y2lyY2xlIGN4PSIyODgiIGN5PSIxNjUiIHI9IjQiIGZpbGw9IiMyZTNmNWMiIC8+CiAgPGNpcmNsZSBjeD0iMzkyIiBjeT0iMTY1IiByPSI0IiBmaWxsPSIjMmUzZjVjIiAvPgogIDxyZWN0IHg9IjM1MyIgeT0iMTg4IiB3aWR0aD0iOCIgaGVpZ2h0PSI0IiByeD0iMS4xNDMiIGZpbGw9IiM5NzJiNTAiIC8+CiAgPHJlY3QgeD0iMzUzIiB5PSIxOTciIHdpZHRoPSI4IiBoZWlnaHQ9IjQiIHJ4PSIxLjE0MyIgZmlsbD0iIzk3MmI1MCIgLz4KICA8cG9seWdvbiBwb2ludHM9IjM1MSwyMjggMzQ2LDI0OCAzMzQsMjQ4IDMyOSwyMjgiIGZpbGw9IiNmMGY2ZmYiIHRyYW5zZm9ybT0ibWF0cml4KDAuOTQ4NSwwLDAsMC45NDMxLDE3LjcwNSwxNS45NDIpIiAvPgogIDxjaXJjbGUgY3g9IjM0MC4yIiBjeT0iMjU2LjgiIHI9IjUuNSIgZmlsbD0iI2YwZjZmZiIgLz4KICA8cmVjdCB4PSI0MDAiIHk9Ijg4IiB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHJ4PSIzIiBmaWxsPSIjOTcyYjUwIiAvPgogIDxjaXJjbGUgY3g9IjI2NCIgY3k9IjI1NCIgcj0iNSIgZmlsbD0iIzk3MmI1MCIgLz4KICA8dGV4dCB4PSIzNDAiIHk9IjM2OCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+PHRzcGFuIHN0eWxlPSJmb250LXdlaWdodDo5MDA7Zm9udC1zaXplOjUwcHg7Zm9udC1mYW1pbHk6J0hlbHZldGljYSBOZXVlJyxBcmlhbCxzYW5zLXNlcmlmO2ZpbGw6Izk5YzRmZTtmaWxsLW9wYWNpdHk6MC41OTYiPlRhbWJ1PC90c3Bhbj48dHNwYW4gc3R5bGU9ImZvbnQtd2VpZ2h0OjIwMDtmb250LXNpemU6NTBweDtmb250LWZhbWlseTonSGVsdmV0aWNhIE5ldWUnLEFyaWFsLHNhbnMtc2VyaWY7ZmlsbDojOTcyYjUwIj5UZWNoPC90c3Bhbj48L3RleHQ+CiAgPHRleHQgeD0iMzQwIiB5PSI0MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIHN0eWxlPSJmaWxsOiM5NzJiNTA7Zm9udC1mYW1pbHk6J0hlbHZldGljYSBOZXVlJyxBcmlhbCxzYW5zLXNlcmlmO2ZvbnQtc2l6ZToxMHB4Ij5FTEVDVFJPWMKZIDI0OCAzRCBQUklOVDwvdGV4dD4KICA8cmVjdCB4PSIyNDYiIHk9IjE3NyIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiByeD0iMSIgZmlsbD0iI2YwZjZmZiIgLz4KICA8cmVjdCB4PSIyNDYiIHk9IjE4OSIgd2lkdGg9IjcuNSIgaGVpZ2h0PSI3LjUiIHJ4PSIwLjc1IiBmaWxsPSIjNjMzNTU2IiAvPgogIDxyZWN0IHg9IjMxOSIgeT0iMTg4IiB3aWR0aD0iOCIgaGVpZ2h0PSI0IiByeD0iMS4xNDMiIGZpbGw9IiM5NzJiNTAiIC8+CiAgPHJlY3QgeD0iMzE5IiB5PSIxOTciIHdpZHRoPSI4IiBoZWlnaHQ9IjQiIHJ4PSIxLjE0MyIgZmlsbD0iIzk3MmI1MCIgLz4KICA8cmVjdCB4PSIzMjQuMCIgeT0iMTg0LjkiIHdpZHRoPSIzMS45IiBoZWlnaHQ9IjI4LjciIHJ4PSIyLjkiIGZpbGw9IiM5NzJiNTAiIC8+CiAgPHJlY3QgeD0iMzI3LjMiIHk9IjE3NyIgd2lkdGg9IjI1LjQiIGhlaWdodD0iNTIiIHJ4PSIyLjMiIGZpbGw9IiNmMGY2ZmYiIC8+CiAgPHJlY3QgeD0iNDI2LjUiIHk9IjE4OSIgd2lkdGg9IjcuNSIgaGVpZ2h0PSI3LjUiIHJ4PSIwLjc1IiBmaWxsPSIjNjMzNTU2IiAvPgogIDxyZWN0IHg9IjI0NiIgeT0iMTc1IiB3aWR0aD0iNy41IiBoZWlnaHQ9IjcuNSIgcng9IjAuNzUiIGZpbGw9IiM2MzM1NTYiIC8+CiAgPHJlY3QgeD0iNDI2LjUiIHk9IjE3NSIgd2lkdGg9IjcuNSIgaGVpZ2h0PSI3LjUiIHJ4PSIwLjc1IiBmaWxsPSIjNjMzNTU2IiAvPgogIDxjaXJjbGUgY3g9IjM3NiIgY3k9IjE2NSIgcj0iNCIgZmlsbD0iIzJlM2Y1YyIgLz4KICA8Y2lyY2xlIGN4PSIzMDQiIGN5PSIxNjUiIHI9IjQiIGZpbGw9IiMyZTNmNWMiIC8+CiAgPHJlY3QgeD0iMzA0IiB5PSIxNDkiIHdpZHRoPSI3MiIgaGVpZ2h0PSI0IiByeD0iNi41IiBmaWxsPSIjOTcyYjUwIiAvPgogIDxyZWN0IHg9IjMwNCIgeT0iMTQ5IiB3aWR0aD0iMjIiIGhlaWdodD0iNCIgcng9IjIiIGZpbGw9IiM5NzJiNTAiIC8+CiAgPHJlY3QgeD0iMzU0IiB5PSIxNDkiIHdpZHRoPSIyMiIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0iIzk3MmI1MCIgLz4KICA8cmVjdCB4PSIzMzEuMSIgeT0iMTQ0IiB3aWR0aD0iMjIiIGhlaWdodD0iNCIgcng9IjIiIGZpbGw9IiM5NzJiNTAiIC8+CiAgPHJlY3QgeD0iMzI4IiB5PSIxNDQiIHdpZHRoPSIyMiIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0iIzk3MmI1MCIgLz4KICA8cmVjdCB4PSIzMTkiIHk9IjIwNiIgd2lkdGg9IjgiIGhlaWdodD0iNCIgcng9IjEuMTQzIiBmaWxsPSIjOTcyYjUwIiAvPgogIDxyZWN0IHg9IjMxOSIgeT0iMjE1IiB3aWR0aD0iOCIgaGVpZ2h0PSI0IiByeD0iMS4xNDMiIGZpbGw9IiM5NzJiNTAiIC8+CiAgPHJlY3QgeD0iMzI0LjAiIHk9IjE5My45IiB3aWR0aD0iMzEuOSIgaGVpZ2h0PSIyOC43IiByeD0iMi45IiBmaWxsPSIjOTcyYjUwIiAvPgogIDxyZWN0IHg9IjM1MyIgeT0iMjA2IiB3aWR0aD0iOCIgaGVpZ2h0PSI0IiByeD0iMS4xNDMiIGZpbGw9IiM5NzJiNTAiIC8+CiAgPHJlY3QgeD0iMzUzIiB5PSIyMTUiIHdpZHRoPSI4IiBoZWlnaHQ9IjQiIHJ4PSIxLjE0MyIgZmlsbD0iIzk3MmI1MCIgLz4KPC9zdmc+Cg==" alt="TambuTech" style="width:100%;height:auto;">
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-val">50<span>+</span></div>
+        <div class="stat-label">Progetti completati</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val">4</div>
+        <div class="stat-label">Materiali disponibili</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val">0<span>.1mm</span></div>
+        <div class="stat-label">Risoluzione layer min</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val">48<span>h</span></div>
+        <div class="stat-label">Tempo medio consegna</div>
       </div>
     </div>
-  </section>
 
-  <!-- Services Strip -->
-  <div class="services-strip">
-    <div class="service-card" onclick="showPage('print3d')">
-      <div class="sc-num">// 01</div>
-      <span class="sc-icon">🖨️</span>
-      <div class="sc-title">Stampa 3D</div>
-      <p class="sc-desc">Prototipazione rapida, parti custom, contenitori e componenti meccanici. PLA, PETG, TPU e ABS.</p>
-      <div class="sc-arrow">Scopri →</div>
-    </div>
-    <div class="service-card" onclick="showPage('electronics')">
-      <div class="sc-num">// 02</div>
-      <span class="sc-icon">⚡</span>
-      <div class="sc-title">Elettronica & Arduino</div>
-      <p class="sc-desc">Progettazione di circuiti, firmware personalizzato, sensori, automazione e IoT con Arduino.</p>
-      <div class="sc-arrow">Scopri →</div>
-    </div>
-    <div class="service-card" onclick="showPage('contacts')">
-      <div class="sc-num">// 03</div>
-      <span class="sc-icon">🔧</span>
-      <div class="sc-title">Progetti Custom</div>
-      <p class="sc-desc">Soluzioni integrate che combinano stampa 3D e elettronica per un prodotto finito e funzionante.</p>
-      <div class="sc-arrow">Contattami →</div>
-    </div>
+    <footer>
+      <div class="footer-brand"><strong>TambuTech</strong> — Electronics · 3D Print</div>
+      <div class="footer-copy">© 2026 TambuTech. Tutti i diritti riservati.</div>
+    </footer>
   </div>
 
-  <!-- Stats -->
-  <div class="stats-row">
-    <div class="stat">
-      <div class="stat-val">50<span>+</span></div>
-      <div class="stat-label">Progetti completati</div>
-    </div>
-    <div class="stat">
-      <div class="stat-val">4</div>
-      <div class="stat-label">Materiali disponibili</div>
-    </div>
-    <div class="stat">
-      <div class="stat-val">0<span>.1mm</span></div>
-      <div class="stat-label">Risoluzione layer min</div>
-    </div>
-    <div class="stat">
-      <div class="stat-val">48<span>h</span></div>
-      <div class="stat-label">Tempo medio consegna</div>
-    </div>
-  </div>
-
-  <footer>
-    <div class="footer-brand"><strong>TambuTech</strong> — Electronics · 3D Print</div>
-    <div class="footer-copy">© 2025 TambuTech. Tutti i diritti riservati.</div>
-  </footer>
-</div>
-
-
-<!-- ══════════════════════════════════
-     PAGE: STAMPA 3D
-══════════════════════════════════ -->
-<div id="page-print3d" class="page">
-
-  <section class="page-hero">
-    <div class="hero-bg"></div>
-    <div class="hero-grid" style="opacity:0.5;"></div>
-    <div style="position:relative;z-index:2;">
-      <div class="page-tag">Servizi</div>
-      <h1 class="page-h1">Stampa<br><span style="color:var(--crimson)">3D</span></h1>
-      <p class="page-sub">
-        Trasformo i tuoi file CAD in oggetti reali con stampa FDM di alta qualità. 
-        Dalla prototipazione rapida alle piccole serie, con attenzione ai dettagli e ai materiali giusti.
-      </p>
-    </div>
-  </section>
-
-  <!-- Materiali -->
-  <section class="section">
-    <div class="section-label">Materiali disponibili</div>
-    <div class="materials-grid">
-      <div class="mat-card">
-        <div class="mat-badge pla">PLA</div>
-        <div class="mat-name">PLA Standard</div>
-        <p class="mat-desc">Il materiale più versatile. Ideale per prototipi, modelli, contenitori e oggetti decorativi. Facile da stampare, ottima definizione dei dettagli.</p>
-      </div>
-      <div class="mat-card">
-        <div class="mat-badge petg">PETG</div>
-        <div class="mat-name">PETG</div>
-        <p class="mat-desc">Resistente agli urti e alla temperatura. Perfetto per parti funzionali, supporti meccanici e componenti che richiedono durabilità.</p>
-      </div>
-      <div class="mat-card">
-        <div class="mat-badge tpu">TPU</div>
-        <div class="mat-name">TPU Flessibile</div>
-        <p class="mat-desc">Materiale elastico e gommoso. Ideale per guarnizioni, cover, grip ergonomici e qualsiasi parte che debba essere flessibile.</p>
-      </div>
-      <div class="mat-card">
-        <div class="mat-badge abs">ABS</div>
-        <div class="mat-name">ABS</div>
-        <p class="mat-desc">Alta resistenza termica e meccanica. Perfetto per parti esposte al calore, componenti industriali e post-lavorazione con acetone.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Capacità -->
-  <section class="section">
-    <div class="section-label">Capacità di stampa</div>
-    <div class="caps-list">
-      <div class="cap-item">
-        <div class="cap-num">01</div>
-        <div class="cap-text">
-          <strong>Volume di stampa fino a 220×220×250mm</strong>
-          <p>Dimensioni generose per la maggior parte dei progetti. Pezzi più grandi possono essere divisi e assemblati.</p>
-        </div>
-      </div>
-      <div class="cap-item">
-        <div class="cap-num">02</div>
-        <div class="cap-text">
-          <strong>Layer fino a 0.1mm di risoluzione</strong>
-          <p>Superfici lisce e dettagli fini grazie a strati ultra-sottili. Bilanciamento tra qualità e tempo di stampa.</p>
-        </div>
-      </div>
-      <div class="cap-item">
-        <div class="cap-num">03</div>
-        <div class="cap-text">
-          <strong>Post-processing e finitura</strong>
-          <p>Rimozione dei supporti, carteggiatura, primer e verniciatura disponibili su richiesta.</p>
-        </div>
-      </div>
-      <div class="cap-item">
-        <div class="cap-num">04</div>
-        <div class="cap-text">
-          <strong>Formati accettati: STL, OBJ, STEP, 3MF</strong>
-          <p>Posso lavorare con i file più comuni. Se non hai un modello 3D, posso aiutarti a crearlo.</p>
-        </div>
-      </div>
-      <div class="cap-item">
-        <div class="cap-num">05</div>
-        <div class="cap-text">
-          <strong>Piccole serie e ordini multipli</strong>
-          <p>Disponibilità per produzioni ripetute dello stesso pezzo, con tariffe vantaggiose al volume.</p>
-        </div>
-      </div>
-      <div class="cap-item">
-        <div class="cap-num">06</div>
-        <div class="cap-text">
-          <strong>Consulenza sul design for print</strong>
-          <p>Ottimizzazione del tuo modello per la stampa 3D: orientamento, supporti, infill, tolleranze.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Come funziona -->
-  <section class="section">
-    <div class="section-label">Come funziona</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:2px;background:var(--border);">
-      <div style="background:var(--surface);padding:32px 24px;text-align:center;">
-        <div style="font-size:32px;margin-bottom:12px;">📁</div>
-        <div style="font-family:var(--mono);font-size:10px;color:var(--crimson);letter-spacing:0.1em;margin-bottom:8px;">STEP 01</div>
-        <div style="font-weight:700;font-size:15px;margin-bottom:8px;">Invia il file</div>
-        <p style="font-family:var(--mono);font-size:12px;color:var(--text-dim);">Mandami il tuo modello 3D o descrivimi cosa ti serve</p>
-      </div>
-      <div style="background:var(--surface);padding:32px 24px;text-align:center;">
-        <div style="font-size:32px;margin-bottom:12px;">💬</div>
-        <div style="font-family:var(--mono);font-size:10px;color:var(--crimson);letter-spacing:0.1em;margin-bottom:8px;">STEP 02</div>
-        <div style="font-weight:700;font-size:15px;margin-bottom:8px;">Preventivo</div>
-        <p style="font-family:var(--mono);font-size:12px;color:var(--text-dim);">Ricevi un preventivo chiaro con materiale, tempo e costo</p>
-      </div>
-      <div style="background:var(--surface);padding:32px 24px;text-align:center;">
-        <div style="font-size:32px;margin-bottom:12px;">🖨️</div>
-        <div style="font-family:var(--mono);font-size:10px;color:var(--crimson);letter-spacing:0.1em;margin-bottom:8px;">STEP 03</div>
-        <div style="font-weight:700;font-size:15px;margin-bottom:8px;">Stampa</div>
-        <p style="font-family:var(--mono);font-size:12px;color:var(--text-dim);">Produzione con monitoraggio costante della qualità</p>
-      </div>
-      <div style="background:var(--surface);padding:32px 24px;text-align:center;">
-        <div style="font-size:32px;margin-bottom:12px;">📦</div>
-        <div style="font-family:var(--mono);font-size:10px;color:var(--crimson);letter-spacing:0.1em;margin-bottom:8px;">STEP 04</div>
-        <div style="font-weight:700;font-size:15px;margin-bottom:8px;">Consegna</div>
-        <p style="font-family:var(--mono);font-size:12px;color:var(--text-dim);">Ritiro di persona o spedizione in tutta Italia</p>
-      </div>
-    </div>
-  </section>
-
-  <div style="padding:40px 80px;display:flex;justify-content:center;">
-    <a class="btn-primary" onclick="showPage('contacts')" style="font-size:14px;padding:16px 40px;">Richiedi un preventivo →</a>
-  </div>
-
-  <footer>
-    <div class="footer-brand"><strong>TambuTech</strong> — Electronics · 3D Print</div>
-    <div class="footer-copy">© 2025 TambuTech. Tutti i diritti riservati.</div>
-  </footer>
-</div>
-
-
-<!-- ══════════════════════════════════
-     PAGE: ELETTRONICA
-══════════════════════════════════ -->
-<div id="page-electronics" class="page">
-
-  <section class="page-hero elec-hero">
-    <div class="hero-bg" style="background:radial-gradient(ellipse 60% 70% at 30% 50%, rgba(46,63,92,0.4) 0%, transparent 60%),radial-gradient(ellipse 40% 40% at 80% 80%, rgba(79,195,247,0.08) 0%, transparent 50%);"></div>
-    <div class="hero-grid" style="opacity:0.5;"></div>
-    <div style="position:relative;z-index:2;">
-      <div class="page-tag" style="color:var(--sky);">Servizi</div>
-      <h1 class="page-h1">Elettronica<br><span style="color:var(--sky);font-weight:400;">& Arduino</span></h1>
-      <p class="page-sub">
-        Progettazione di sistemi embedded, sensori, attuatori e firmware personalizzato con Arduino. 
-        Dal semplice sketch al prodotto IoT completo.
-      </p>
-    </div>
-  </section>
-
-  <!-- Progetti esempio -->
-  <section class="section">
-    <div class="section-label">Tipologie di progetto</div>
-    <div class="projects-grid">
-      <div class="proj-card" data-num="01">
-        <div class="proj-tags">
-          <span class="proj-tag">Arduino</span>
-          <span class="proj-tag">Sensori</span>
-        </div>
-        <div class="proj-title">Stazioni di monitoraggio</div>
-        <p class="proj-desc">Sistemi per il rilevamento di temperatura, umidità, qualità dell'aria, luminosità. Dati visualizzati su display o inviati via WiFi/Bluetooth.</p>
-      </div>
-      <div class="proj-card" data-num="02">
-        <div class="proj-tags">
-          <span class="proj-tag">Automazione</span>
-          <span class="proj-tag">Relay</span>
-        </div>
-        <div class="proj-title">Controllo e automazione</div>
-        <p class="proj-desc">Sistemi di accensione automatica, controllo di motori e pompe, gestione di luci e dispositivi tramite timer o sensori di prossimità.</p>
-      </div>
-      <div class="proj-card" data-num="03">
-        <div class="proj-tags">
-          <span class="proj-tag">IoT</span>
-          <span class="proj-tag">WiFi</span>
-          <span class="proj-tag">MQTT</span>
-        </div>
-        <div class="proj-title">Dispositivi IoT</div>
-        <p class="proj-desc">Connessione a rete WiFi, invio dati a piattaforme cloud (MQTT, HTTP REST), integrazione con Home Assistant e altri sistemi domotici.</p>
-      </div>
-      <div class="proj-card" data-num="04">
-        <div class="proj-tags">
-          <span class="proj-tag">Display</span>
-          <span class="proj-tag">LED</span>
-        </div>
-        <div class="proj-title">Interfacce visive</div>
-        <p class="proj-desc">Dashboard con display OLED/TFT, matrici LED, strip RGB addressabili (WS2812B), indicatori luminosi e pannelli informativi.</p>
-      </div>
-      <div class="proj-card" data-num="05">
-        <div class="proj-tags">
-          <span class="proj-tag">PCB</span>
-          <span class="proj-tag">Custom</span>
-        </div>
-        <div class="proj-title">Schede custom</div>
-        <p class="proj-desc">Progettazione di shield e breakout board personalizzati, integrazione di componenti specifici, ottimizzazione dello spazio fisico.</p>
-      </div>
-      <div class="proj-card" data-num="06">
-        <div class="proj-tags">
-          <span class="proj-tag">3D+Electronics</span>
-        </div>
-        <div class="proj-title">Integrazione 3D + Electronics</div>
-        <p class="proj-desc">La combinazione vincente: contenitore stampato 3D su misura + circuito elettronico dedicato = prodotto finito e professionale.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Specifiche tecniche -->
-  <section class="section">
-    <div class="section-label">Stack tecnologico</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;">
-      <div>
-        <div style="font-family:var(--mono);font-size:11px;color:var(--sky);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;"># Hardware</div>
-        <table class="specs-table">
-          <tr><td>Piattaforme</td><td>Arduino Uno/Nano/Mega, ESP8266, ESP32</td></tr>
-          <tr><td>Comunicazione</td><td>I²C, SPI, UART, WiFi, Bluetooth, LoRa</td></tr>
-          <tr><td>Sensori</td><td>DHT22, BMP280, PIR, ultrasonic, LDR, MPU6050</td></tr>
-          <tr><td>Attuatori</td><td>Servo, stepper, DC motor, relay, solenoid</td></tr>
-          <tr><td>Display</td><td>OLED 128x64, TFT ILI9341, 7-seg, LCD 16x2</td></tr>
-          <tr><td>Alimentazione</td><td>USB, LiPo, 18650, batteria a muro, solare</td></tr>
-        </table>
-      </div>
-      <div>
-        <div style="font-family:var(--mono);font-size:11px;color:var(--crimson);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;"># Software & Tools</div>
-        <table class="specs-table">
-          <tr><td>IDE/Ambiente</td><td>Arduino IDE, PlatformIO, VS Code</td></tr>
-          <tr><td>Linguaggi</td><td>C/C++ (Arduino), Python (tool & scripts)</td></tr>
-          <tr><td>Librerie</td><td>Adafruit, Wire, ESPUI, PubSubClient, FastLED</td></tr>
-          <tr><td>CAD elettronico</td><td>KiCad, EasyEDA per schemi e PCB layout</td></tr>
-          <tr><td>Versioning</td><td>Git/GitHub per tracciamento del codice</td></tr>
-          <tr><td>Protocolli IoT</td><td>MQTT, HTTP REST, WebSocket, UDP</td></tr>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA -->
-  <div style="padding:40px 80px;display:flex;justify-content:center;gap:16px;flex-wrap:wrap;">
-    <a class="btn-primary" onclick="showPage('contacts')" style="font-size:14px;padding:16px 40px;background:linear-gradient(135deg,#1c4f7a,#0d3557);border:1px solid rgba(79,195,247,0.3);">Parla del tuo progetto →</a>
-    <a class="btn-ghost" onclick="showPage('print3d')">Vedi la Stampa 3D</a>
-  </div>
-
-  <footer>
-    <div class="footer-brand"><strong>TambuTech</strong> — Electronics · 3D Print</div>
-    <div class="footer-copy">© 2025 TambuTech. Tutti i diritti riservati.</div>
-  </footer>
-</div>
-
-
-<!-- ══════════════════════════════════
-     PAGE: CONTATTI
-══════════════════════════════════ -->
-<div id="page-contacts" class="page">
-
-  <div class="contacts-layout">
-
-    <!-- Left: info -->
-    <div class="contacts-left">
-      <div class="page-tag" style="color:var(--sky);">Contatti</div>
-      <h1 class="page-h1" style="margin-bottom:16px;">Parliamo<br><span style="color:var(--crimson);">del tuo<br>progetto.</span></h1>
-      <p style="font-family:var(--mono);font-size:13px;color:var(--text-dim);line-height:1.8;max-width:380px;">
-        Che tu abbia un'idea da realizzare, un prototipo da stampare o un circuito da progettare — scrivimi. Rispondo entro 24 ore.
-      </p>
-
-      <ul class="contact-list">
-        <li>
-          <div class="ci-icon">📧</div>
-          <div>
-            <div class="ci-label">Email</div>
-            <div class="ci-value"><a href="mailto:info@tambutech.it">info@tambutech.it</a></div>
-          </div>
-        </li>
-        <li>
-          <div class="ci-icon">📱</div>
-          <div>
-            <div class="ci-label">WhatsApp / Telegram</div>
-            <div class="ci-value">+39 333 000 0000</div>
-          </div>
-        </li>
-        <li>
-          <div class="ci-icon">📍</div>
-          <div>
-            <div class="ci-label">Zona di lavoro</div>
-            <div class="ci-value">Genova, Liguria — Spedizioni in tutta Italia</div>
-          </div>
-        </li>
-        <li>
-          <div class="ci-icon">🕐</div>
-          <div>
-            <div class="ci-label">Disponibilità</div>
-            <div class="ci-value">Lun–Ven, 9:00–20:00</div>
-          </div>
-        </li>
-      </ul>
-
-      <!-- Social -->
-      <div style="margin-top:40px;">
-        <div style="font-family:var(--mono);font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;">Seguimi su</div>
-        <div style="display:flex;gap:12px;">
-          <a href="#" style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:4px;font-family:var(--mono);font-size:12px;color:var(--text-dim);text-decoration:none;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(79,195,247,0.4)'" onmouseout="this.style.borderColor='var(--border)'">
-            Instagram
-          </a>
-          <a href="#" style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:4px;font-family:var(--mono);font-size:12px;color:var(--text-dim);text-decoration:none;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(79,195,247,0.4)'" onmouseout="this.style.borderColor='var(--border)'">
-            GitHub
-          </a>
-          <a href="#" style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:4px;font-family:var(--mono);font-size:12px;color:var(--text-dim);text-decoration:none;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(79,195,247,0.4)'" onmouseout="this.style.borderColor='var(--border)'">
-            YouTube
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Right: form -->
-    <div class="contacts-right">
-      <div style="font-family:var(--mono);font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:32px;padding-bottom:16px;border-bottom:1px solid var(--border);">
-        // Richiedi un preventivo
-      </div>
-
-      <div id="contact-form">
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Nome</label>
-            <input type="text" class="form-input" placeholder="Mario Rossi">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Email</label>
-            <input type="email" class="form-input" placeholder="mario@email.com">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Tipo di progetto</label>
-          <select class="form-select">
-            <option value="">Seleziona un servizio...</option>
-            <option>Stampa 3D — Prototipo / pezzo singolo</option>
-            <option>Stampa 3D — Piccola serie</option>
-            <option>Elettronica — Progetto Arduino</option>
-            <option>Elettronica — Sistema IoT</option>
-            <option>Progetto integrato (3D + Elettronica)</option>
-            <option>Consulenza tecnica</option>
-            <option>Altro</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Budget indicativo</label>
-          <select class="form-select">
-            <option value="">Seleziona un range...</option>
-            <option>< €50</option>
-            <option>€50 – €150</option>
-            <option>€150 – €500</option>
-            <option>€500 – €1000</option>
-            <option>> €1000</option>
-            <option>Da definire insieme</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Descrivi il tuo progetto</label>
-          <textarea class="form-textarea" placeholder="Descrivi cosa hai in mente: dimensioni, materiali preferiti, funzionalità richieste, tempi di consegna..."></textarea>
-        </div>
-
-        <button class="btn-primary" onclick="submitForm()" style="width:100%;justify-content:center;font-size:14px;padding:16px;">
-          Invia richiesta →
-        </button>
-
-        <p style="font-family:var(--mono);font-size:11px;color:var(--text-dim);margin-top:16px;text-align:center;opacity:0.6;">
-          Rispondo entro 24 ore. Nessuno spam, promesso.
+  <div id="page-print3d" class="page">
+    <section class="page-hero">
+      <div class="hero-bg"></div>
+      <div class="hero-grid" style="opacity:0.5;"></div>
+      <div style="position:relative;z-index:2;">
+        <div class="page-tag">Servizi</div>
+        <h1 class="page-h1">Stampa<br><span style="color:var(--crimson)">3D</span></h1>
+        <p class="page-sub">
+          Trasformo i tuoi file CAD in oggetti reali con stampa FDM di alta qualità. Dalla prototipazione rapida alle piccole serie, con attenzione ai dettagli e ai materiali giusti.
         </p>
       </div>
+    </section>
 
-      <!-- Success message (hidden) -->
-      <div id="form-success" style="display:none;text-align:center;padding:60px 20px;">
-        <div style="font-size:48px;margin-bottom:20px;">✅</div>
-        <div style="font-size:22px;font-weight:700;margin-bottom:12px;">Richiesta inviata!</div>
-        <p style="font-family:var(--mono);font-size:13px;color:var(--text-dim);line-height:1.7;">
-          Grazie per avermi contattato.<br>Ti risponderò entro 24 ore.
-        </p>
-        <button class="btn-ghost" onclick="resetForm()" style="margin-top:28px;">Invia un'altra richiesta</button>
+    <section class="section">
+      <div class="section-label">Materiali disponibili</div>
+      <div class="materials-grid">
+        <div class="mat-card">
+          <div class="mat-badge pla">PLA</div>
+          <div class="mat-name">PLA Standard</div>
+          <p class="mat-desc">Il materiale più versatile. Ideale per prototipi, modelli, contenitori e oggetti decorativi. Facile da stampare, ottima definizione dei dettagli.</p>
+        </div>
+        <div class="mat-card">
+          <div class="mat-badge petg">PETG</div>
+          <div class="mat-name">PETG</div>
+          <p class="mat-desc">Resistente agli urti e alla temperatura. Perfetto per parti funzionali, supporti meccanici e componenti che richiedono durabilità.</p>
+        </div>
+        <div class="mat-card">
+          <div class="mat-badge tpu">TPU</div>
+          <div class="mat-name">TPU Flessibile</div>
+          <p class="mat-desc">Materiale elastico e gommoso. Ideale per guarnizioni, cover, grip ergonomici e qualsiasi parte che debba essere flessibile.</p>
+        </div>
+        <div class="mat-card">
+          <div class="mat-badge abs">ABS</div>
+          <div class="mat-name">ABS</div>
+          <p class="mat-desc">Alta resistenza termica e meccanica. Perfetto per parti esposte al calore, componenti industriali e post-lavorazione con acetone.</p>
+        </div>
       </div>
+    </section>
+
+    <section class="section">
+      <div class="section-label">Capacità di stampa</div>
+      <div class="caps-list">
+        <div class="cap-item"><div class="cap-num">01</div><div class="cap-text"><strong>Volume di stampa fino a 220×220×250mm</strong><p>Dimensioni generose per la maggior parte dei progetti. Pezzi più grandi possono essere divisi e assemblati.</p></div></div>
+        <div class="cap-item"><div class="cap-num">02</div><div class="cap-text"><strong>Layer fino a 0.1mm di risoluzione</strong><p>Superfici lisce e dettagli fini grazie a strati ultra-sottili. Bilanciamento tra qualità e tempo di stampa.</p></div></div>
+        <div class="cap-item"><div class="cap-num">03</div><div class="cap-text"><strong>Post-processing e finitura</strong><p>Rimozione dei supporti, carteggiatura, primer e verniciatura disponibili su richiesta.</p></div></div>
+        <div class="cap-item"><div class="cap-num">04</div><div class="cap-text"><strong>Formati accettati: STL, OBJ, STEP, 3MF</strong><p>Posso lavorare con i file più comuni. Se non hai un modello 3D, posso aiutarti a crearlo.</p></div></div>
+        <div class="cap-item"><div class="cap-num">05</div><div class="cap-text"><strong>Piccole serie e ordini multipli</strong><p>Disponibilità per produzioni ripetute dello stesso pezzo, con tariffe vantaggiose al volume.</p></div></div>
+        <div class="cap-item"><div class="cap-num">06</div><div class="cap-text"><strong>Consulenza sul design for print</strong><p>Ottimizzazione del tuo modello per la stampa 3D: orientamento, supporti, infill, tolleranze.</p></div></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-label">Come funziona</div>
+      <div class="steps-grid">
+        <div class="step-card"><div class="step-icon">📁</div><div class="step-num">STEP 01</div><div class="step-title">Invia il file</div><p class="step-desc">Mandami il tuo modello 3D o descrivimi cosa ti serve.</p></div>
+        <div class="step-card"><div class="step-icon">💬</div><div class="step-num">STEP 02</div><div class="step-title">Preventivo</div><p class="step-desc">Ricevi un preventivo chiaro con materiale, tempo e costo.</p></div>
+        <div class="step-card"><div class="step-icon">🖨️</div><div class="step-num">STEP 03</div><div class="step-title">Stampa</div><p class="step-desc">Produzione con monitoraggio costante della qualità.</p></div>
+        <div class="step-card"><div class="step-icon">📦</div><div class="step-num">STEP 04</div><div class="step-title">Consegna</div><p class="step-desc">Ritiro di persona o spedizione in tutta Italia.</p></div>
+      </div>
+    </section>
+
+    <div class="cta-row">
+      <a class="btn-primary" onclick="showPage('contacts')">Richiedi un preventivo →</a>
     </div>
+
+    <footer>
+      <div class="footer-brand"><strong>TambuTech</strong> — Electronics · 3D Print</div>
+      <div class="footer-copy">© 2026 TambuTech. Tutti i diritti riservati.</div>
+    </footer>
   </div>
 
-  <footer>
-    <div class="footer-brand"><strong>TambuTech</strong> — Electronics · 3D Print</div>
-    <div class="footer-copy">© 2025 TambuTech. Tutti i diritti riservati.</div>
-  </footer>
-</div>
+  <div id="page-electronics" class="page">
+    <section class="page-hero elec-hero">
+      <div class="hero-bg" style="background:radial-gradient(ellipse 60% 70% at 30% 50%, rgba(46,63,92,0.4) 0%, transparent 60%),radial-gradient(ellipse 40% 40% at 80% 80%, rgba(79,195,247,0.08) 0%, transparent 50%);"></div>
+      <div class="hero-grid" style="opacity:0.5;"></div>
+      <div style="position:relative;z-index:2;">
+        <div class="page-tag" style="color:var(--sky);">Servizi</div>
+        <h1 class="page-h1">Elettronica<br><span style="color:var(--sky);font-weight:400;">& Arduino</span></h1>
+        <p class="page-sub">
+          Progettazione di sistemi embedded, sensori, attuatori e firmware personalizzato con Arduino. Dal semplice sketch al prodotto IoT completo.
+        </p>
+      </div>
+    </section>
 
+    <section class="section">
+      <div class="section-label">Tipologie di progetto</div>
+      <div class="projects-grid">
+        <div class="proj-card" data-num="01"><div class="proj-tags"><span class="proj-tag">Arduino</span><span class="proj-tag">Sensori</span></div><div class="proj-title">Stazioni di monitoraggio</div><p class="proj-desc">Sistemi per il rilevamento di temperatura, umidità, qualità dell'aria, luminosità. Dati visualizzati su display o inviati via WiFi/Bluetooth.</p></div>
+        <div class="proj-card" data-num="02"><div class="proj-tags"><span class="proj-tag">Automazione</span><span class="proj-tag">Relay</span></div><div class="proj-title">Controllo e automazione</div><p class="proj-desc">Sistemi di accensione automatica, controllo di motori e pompe, gestione di luci e dispositivi tramite timer o sensori di prossimità.</p></div>
+        <div class="proj-card" data-num="03"><div class="proj-tags"><span class="proj-tag">IoT</span><span class="proj-tag">WiFi</span><span class="proj-tag">MQTT</span></div><div class="proj-title">Dispositivi IoT</div><p class="proj-desc">Connessione a rete WiFi, invio dati a piattaforme cloud, integrazione con Home Assistant e altri sistemi domotici.</p></div>
+        <div class="proj-card" data-num="04"><div class="proj-tags"><span class="proj-tag">Display</span><span class="proj-tag">LED</span></div><div class="proj-title">Interfacce visive</div><p class="proj-desc">Dashboard con display OLED/TFT, matrici LED, strip RGB addressabili, indicatori luminosi e pannelli informativi.</p></div>
+        <div class="proj-card" data-num="05"><div class="proj-tags"><span class="proj-tag">PCB</span><span class="proj-tag">Custom</span></div><div class="proj-title">Schede custom</div><p class="proj-desc">Progettazione di shield e breakout board personalizzati, integrazione di componenti specifici, ottimizzazione dello spazio fisico.</p></div>
+        <div class="proj-card" data-num="06"><div class="proj-tags"><span class="proj-tag">3D+Electronics</span></div><div class="proj-title">Integrazione 3D + Electronics</div><p class="proj-desc">Contenitore stampato 3D su misura più circuito elettronico dedicato: prodotto finito, ordinato e professionale.</p></div>
+      </div>
+    </section>
 
-<script>
-  function showPage(id) {
-    // Hide all pages
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+    <section class="section">
+      <div class="section-label">Stack tecnologico</div>
+      <div class="tech-grid">
+        <div>
+          <div class="tech-label" style="color:var(--sky);"># Hardware</div>
+          <table class="specs-table">
+            <tr><td>Piattaforme</td><td>Arduino Uno/Nano/Mega, ESP8266, ESP32</td></tr>
+            <tr><td>Comunicazione</td><td>I²C, SPI, UART, WiFi, Bluetooth, LoRa</td></tr>
+            <tr><td>Sensori</td><td>DHT22, BMP280, PIR, ultrasonic, LDR, MPU6050</td></tr>
+            <tr><td>Attuatori</td><td>Servo, stepper, DC motor, relay, solenoid</td></tr>
+            <tr><td>Display</td><td>OLED 128x64, TFT ILI9341, 7-seg, LCD 16x2</td></tr>
+            <tr><td>Alimentazione</td><td>USB, LiPo, 18650, alimentatore a muro, solare</td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="tech-label" style="color:var(--crimson);"># Software & Tools</div>
+          <table class="specs-table">
+            <tr><td>IDE/Ambiente</td><td>Arduino IDE, PlatformIO, VS Code</td></tr>
+            <tr><td>Linguaggi</td><td>C/C++ Arduino, Python per tool e script</td></tr>
+            <tr><td>Librerie</td><td>Adafruit, Wire, ESPUI, PubSubClient, FastLED</td></tr>
+            <tr><td>CAD elettronico</td><td>KiCad, EasyEDA per schemi e PCB layout</td></tr>
+            <tr><td>Versioning</td><td>Git/GitHub per tracciamento del codice</td></tr>
+            <tr><td>Protocolli IoT</td><td>MQTT, HTTP REST, WebSocket, UDP</td></tr>
+          </table>
+        </div>
+      </div>
+    </section>
 
-    // Show target
-    document.getElementById('page-' + id).classList.add('active');
-    document.getElementById('nav-' + id).classList.add('active');
+    <div class="cta-row">
+      <a class="btn-primary" onclick="showPage('contacts')" style="background:linear-gradient(135deg,#1c4f7a,#0d3557);border:1px solid rgba(79,195,247,0.3);">Parla del tuo progetto →</a>
+      <a class="btn-ghost" onclick="showPage('print3d')">Vedi la Stampa 3D</a>
+    </div>
 
-    window.scrollTo(0, 0);
-  }
+    <footer>
+      <div class="footer-brand"><strong>TambuTech</strong> — Electronics · 3D Print</div>
+      <div class="footer-copy">© 2026 TambuTech. Tutti i diritti riservati.</div>
+    </footer>
+  </div>
 
-  function submitForm() {
-    document.getElementById('contact-form').style.display = 'none';
-    document.getElementById('form-success').style.display = 'block';
-  }
+  <div id="page-contacts" class="page">
+    <div class="contacts-layout">
+      <div class="contacts-left">
+        <div class="page-tag" style="color:var(--sky);">Contatti</div>
+        <h1 class="page-h1" style="margin-bottom:16px;">Parliamo<br><span style="color:var(--crimson);">del tuo<br>progetto.</span></h1>
+        <p class="contact-intro">
+          Che tu abbia un'idea da realizzare, un prototipo da stampare o un circuito da progettare — scrivimi. Rispondo entro 24 ore.
+        </p>
 
-  function resetForm() {
-    document.getElementById('contact-form').style.display = 'block';
-    document.getElementById('form-success').style.display = 'none';
-  }
+        <ul class="contact-list">
+          <li><div class="ci-icon">📧</div><div><div class="ci-label">Email</div><div class="ci-value"><a href="mailto:info@tambutech.it">info@tambutech.it</a></div></div></li>
+          <li><div class="ci-icon">📱</div><div><div class="ci-label">WhatsApp / Telegram</div><div class="ci-value">+39 333 000 0000</div></div></li>
+          <li><div class="ci-icon">📍</div><div><div class="ci-label">Zona di lavoro</div><div class="ci-value">Genova, Liguria — Spedizioni in tutta Italia</div></div></li>
+          <li><div class="ci-icon">🕐</div><div><div class="ci-label">Disponibilità</div><div class="ci-value">Lun–Ven, 9:00–20:00</div></div></li>
+        </ul>
 
-  document.querySelectorAll('a[href="#"]').forEach(a => {
-    a.addEventListener('click', e => e.preventDefault());
-  });
-</script>
+        <div class="social-block">
+          <div class="social-label">Seguimi su</div>
+          <div class="social-links">
+            <a href="#">Instagram</a>
+            <a href="#">GitHub</a>
+            <a href="#">YouTube</a>
+          </div>
+        </div>
+      </div>
 
+      <div class="contacts-right">
+        <div class="form-heading">// Richiedi un preventivo</div>
+
+        <div id="contact-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Nome</label>
+              <input type="text" class="form-input" placeholder="Mario Rossi">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-input" placeholder="mario@email.com">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Tipo di progetto</label>
+            <select class="form-select">
+              <option value="">Seleziona un servizio...</option>
+              <option>Stampa 3D — Prototipo / pezzo singolo</option>
+              <option>Stampa 3D — Piccola serie</option>
+              <option>Elettronica — Progetto Arduino</option>
+              <option>Elettronica — Sistema IoT</option>
+              <option>Progetto integrato 3D + Elettronica</option>
+              <option>Consulenza tecnica</option>
+              <option>Altro</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Budget indicativo</label>
+            <select class="form-select">
+              <option value="">Seleziona un range...</option>
+              <option>&lt; €50</option>
+              <option>€50 – €150</option>
+              <option>€150 – €500</option>
+              <option>€500 – €1000</option>
+              <option>&gt; €1000</option>
+              <option>Da definire insieme</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Descrivi il tuo progetto</label>
+            <textarea class="form-textarea" placeholder="Descrivi cosa hai in mente: dimensioni, materiali preferiti, funzionalità richieste, tempi di consegna..."></textarea>
+          </div>
+
+          <button class="btn-primary" onclick="submitForm()" style="width:100%;">Invia richiesta →</button>
+
+          <p style="font-family:var(--mono);font-size:11px;color:var(--text-dim);margin-top:16px;text-align:center;opacity:0.6;">
+            Rispondo entro 24 ore. Nessuno spam, promesso.
+          </p>
+        </div>
+
+        <div id="form-success" style="display:none;text-align:center;padding:60px 20px;">
+          <div style="font-size:48px;margin-bottom:20px;">✅</div>
+          <div style="font-size:22px;font-weight:700;margin-bottom:12px;">Richiesta inviata!</div>
+          <p style="font-family:var(--mono);font-size:13px;color:var(--text-dim);line-height:1.7;">
+            Grazie per avermi contattato.<br>Ti risponderò entro 24 ore.
+          </p>
+          <button class="btn-ghost" onclick="resetForm()" style="margin-top:28px;">Invia un'altra richiesta</button>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="footer-brand"><strong>TambuTech</strong> — Electronics · 3D Print</div>
+      <div class="footer-copy">© 2026 TambuTech. Tutti i diritti riservati.</div>
+    </footer>
+  </div>
+
+  <script>
+    function showPage(id) {
+      document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+      document.querySelectorAll('.nav-links a').forEach(link => link.classList.remove('active'));
+
+      const targetPage = document.getElementById('page-' + id);
+      const targetNav = document.getElementById('nav-' + id);
+
+      if (targetPage) targetPage.classList.add('active');
+      if (targetNav) targetNav.classList.add('active');
+
+      closeMenu();
+      window.scrollTo(0, 0);
+    }
+
+    function toggleMenu() {
+      const navLinks = document.querySelector('.nav-links');
+      const toggle = document.querySelector('.nav-toggle');
+
+      navLinks.classList.toggle('open');
+      toggle.classList.toggle('open');
+    }
+
+    function closeMenu() {
+      const navLinks = document.querySelector('.nav-links');
+      const toggle = document.querySelector('.nav-toggle');
+
+      if (navLinks) navLinks.classList.remove('open');
+      if (toggle) toggle.classList.remove('open');
+    }
+
+    function submitForm() {
+      document.getElementById('contact-form').style.display = 'none';
+      document.getElementById('form-success').style.display = 'block';
+    }
+
+    function resetForm() {
+      document.getElementById('contact-form').style.display = 'block';
+      document.getElementById('form-success').style.display = 'none';
+    }
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 900) closeMenu();
+    });
+  </script>
 </body>
 </html>
-<!-- update -->
