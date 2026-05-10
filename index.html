@@ -1688,21 +1688,26 @@
       <div class="contacts-right">
         <div class="form-heading">// Richiedi un preventivo</div>
 
-        <div id="contact-form">
+        <form id="contact-form" action="https://formsubmit.co/tambustampa3d@libero.it" method="POST">
+          <input type="hidden" name="_subject" value="Nuova richiesta preventivo da TambuTech">
+          <input type="hidden" name="_template" value="table">
+          <input type="hidden" name="_captcha" value="false">
+          <input type="text" name="_honey" style="display:none">
+
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Nome</label>
-              <input type="text" class="form-input" placeholder="Mario Rossi">
+              <input type="text" name="nome" class="form-input" placeholder="Mario Rossi" required>
             </div>
             <div class="form-group">
               <label class="form-label">Email</label>
-              <input type="email" class="form-input" placeholder="mario@email.com">
+              <input type="email" name="email" class="form-input" placeholder="mario@email.com" required>
             </div>
           </div>
 
           <div class="form-group">
             <label class="form-label">Tipo di progetto</label>
-            <select class="form-select">
+            <select name="tipo_progetto" class="form-select" required>
               <option value="">Seleziona un servizio...</option>
               <option>Stampa 3D — Prototipo / pezzo singolo</option>
               <option>Stampa 3D — Piccola serie</option>
@@ -1716,7 +1721,7 @@
 
           <div class="form-group">
             <label class="form-label">Budget indicativo</label>
-            <select class="form-select">
+            <select name="budget" class="form-select" required>
               <option value="">Seleziona un range...</option>
               <option>&lt; €50</option>
               <option>€50 – €150</option>
@@ -1729,15 +1734,15 @@
 
           <div class="form-group">
             <label class="form-label">Descrivi il tuo progetto</label>
-            <textarea class="form-textarea" placeholder="Descrivi cosa hai in mente: dimensioni, materiali preferiti, funzionalità richieste, tempi di consegna..."></textarea>
+            <textarea name="messaggio" class="form-textarea" placeholder="Descrivi cosa hai in mente: dimensioni, materiali preferiti, funzionalità richieste, tempi di consegna..." required></textarea>
           </div>
 
-          <button class="btn-primary" onclick="submitForm()" style="width:100%;">Invia richiesta →</button>
+          <button class="btn-primary" type="submit" style="width:100%;">Invia richiesta →</button>
 
           <p style="font-family:var(--mono);font-size:11px;color:var(--text-dim);margin-top:16px;text-align:center;opacity:0.6;">
             Rispondo entro 24 ore. Nessuno spam, promesso.
           </p>
-        </div>
+        </form>
 
         <div id="form-success" style="display:none;text-align:center;padding:60px 20px;">
           <div style="font-size:48px;margin-bottom:20px;">✅</div>
