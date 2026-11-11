@@ -1,0 +1,418 @@
+---
+const links = [
+  { href: '/', label: 'Home' },
+  { href: '/progetti-realizzati/', label: 'Progetti realizzati' },
+  { href: '/progetti-in-corso/', label: 'Progetti in corso' },
+  { href: '/chi-sono/', label: 'Chi sono' },
+];
+
+const path = Astro.url.pathname;
+const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+---
+
+<header class="site-header">
+  <div class="container bar">
+    <a href="/" class="brand" aria-label="TambuTech - Home">
+      <img src="/logo-symbol.svg" alt="" width="40" height="46" />
+      <span class="word"><b>Tambu</b><span>Tech</span></span>
+    </a>
+
+    <button
+      class="menu-toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="site-nav"
+      aria-label="Apri il menu"
+    >
+      <span class="bars" aria-hidden="true"></span>
+    </button>
+
+    <nav id="site-nav" class="nav" aria-label="Principale">
+      <ul>
+        {
+          links.map((l, i) => (
+            <li style={`--i:${i}`}>
+              <a href={l.href} aria-current={isActive(l.href) ? 'page' : undefined}>
+                <span class="num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                <span class="label">{l.label}</span>
+                <span class="arrow" aria-hidden="true">→</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <a
+        href="/preventivo/"
+        class="btn btn-sm cta"
+        style={`--i:${links.length}`}
+        aria-current={isActive('/preventivo/') ? 'page' : undefined}
+      >
+        Richiedi preventivo
+      </a>
+      <p class="nav-foot" aria-hidden="true">
+        <span>Stampa 3D · Arduino · App · DIY</span>
+        <span>Porlezza (CO)</span>
+      </p>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border-bottom: 1px solid var(--border);
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: var(--header-h);
+  }
+
+  /* Logo: simbolo + scritta come nel logo originale (Tambu grassetto azzurro, Tech leggero cremisi) */
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-height: 48px;
+    text-decoration: none;
+  }
+  .brand img {
+    width: auto;
+    height: 44px;
+    filter: drop-shadow(0 4px 10px rgba(64, 131, 176, 0.25));
+  }
+  .word {
+    font-family: var(--font-logo);
+    font-size: 1.45rem;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .word b {
+    font-weight: 800;
+    color: var(--blue);
+  }
+  .word span {
+    font-weight: 400;
+    color: var(--crimson-text);
+  }
+
+  /* ===== Desktop ===== */
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .nav ul {
+    display: flex;
+    gap: 0.15rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .nav ul a {
+    display: block;
+    padding: 0.7rem 0.85rem;
+    border-radius: 999px;
+    color: var(--text-muted);
+    font-size: 0.97rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition:
+      color 0.15s,
+      background-color 0.15s;
+  }
+  .nav ul a:hover {
+    color: var(--text);
+    background: var(--bg-soft);
+  }
+  .nav ul a[aria-current='page'] {
+    color: var(--text);
+    background: var(--bg-soft);
+    box-shadow: inset 0 -2px 0 var(--accent);
+  }
+  .num,
+  .arrow,
+  .nav-foot {
+    display: none;
+  }
+
+  /* ===== Pulsante hamburger ===== */
+  .menu-toggle {
+    display: none;
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--bg-elevated);
+    cursor: pointer;
+    position: relative;
+  }
+  .bars,
+  .bars::before,
+  .bars::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    width: 20px;
+    height: 2px;
+    margin-left: -10px;
+    background: var(--text);
+    border-radius: 2px;
+    transition:
+      transform 0.2s,
+      opacity 0.2s;
+  }
+  .bars {
+    top: 50%;
+    margin-top: -1px;
+  }
+  .bars::before {
+    top: -6px;
+  }
+  .bars::after {
+    top: 6px;
+  }
+  .menu-toggle[aria-expanded='true'] {
+    border-color: var(--accent);
+  }
+  .menu-toggle[aria-expanded='true'] .bars {
+    background: transparent;
+  }
+  .menu-toggle[aria-expanded='true'] .bars::before {
+    transform: translateY(6px) rotate(45deg);
+  }
+  .menu-toggle[aria-expanded='true'] .bars::after {
+    transform: translateY(-6px) rotate(-45deg);
+  }
+
+  /* ===== Telefono e tablet piccoli =====
+     Il pannello a tutto schermo si attiva solo se JavaScript è disponibile
+     (classe .js su <html>), altrimenti il menu resta sempre visibile. */
+  @media (max-width: 900px) {
+    .brand img {
+      height: 40px;
+    }
+    .word {
+      font-size: 1.3rem;
+    }
+    :global(html.js) .menu-toggle {
+      display: block;
+    }
+
+    :global(html.js) .nav {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      height: calc(100vh - var(--header-h));
+      height: calc(100dvh - var(--header-h));
+      display: none;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      padding: 0.5rem var(--gutter) max(1.5rem, env(safe-area-inset-bottom));
+      padding-left: max(var(--gutter), env(safe-area-inset-left));
+      padding-right: max(var(--gutter), env(safe-area-inset-right));
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      background:
+        radial-gradient(ellipse 80% 40% at 0% 0%, rgba(64, 131, 176, 0.2), transparent 70%),
+        radial-gradient(ellipse 80% 40% at 100% 100%, rgba(194, 62, 104, 0.22), transparent 70%),
+        linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px), var(--bg);
+      background-size:
+        100% 100%,
+        100% 100%,
+        36px 36px,
+        36px 36px,
+        auto;
+    }
+    :global(html.js) .nav.open {
+      display: flex;
+      animation: pannello 0.22s ease-out;
+    }
+
+    /* Mentre il menu è aperto la pagina sotto non scorre e l'header si fonde col pannello.
+       Attenzione: l'overflow va messo SOLO su <html>. Su <body> l'header "sticky" smette di
+       seguire lo schermo e il pannello finirebbe fuori vista se la pagina è scorsa in basso. */
+    :global(html.menu-open) {
+      overflow: hidden;
+    }
+    :global(html.menu-open) .site-header {
+      background: var(--bg);
+    }
+
+    /* Voci grandi e numerate */
+    .nav ul {
+      flex-direction: column;
+      gap: 0;
+    }
+    .nav li {
+      border-bottom: 1px solid var(--border);
+    }
+    .nav ul a {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      min-height: 64px;
+      padding: 0.9rem 0.25rem;
+      border-radius: 0;
+      background: none;
+      box-shadow: none;
+      color: var(--text);
+      font-family: var(--font-display);
+      font-size: 1.55rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .nav ul a:hover {
+      background: none;
+      color: var(--text);
+    }
+    .nav ul a:active {
+      background: var(--bg-soft);
+    }
+    .nav ul a[aria-current='page'] {
+      background: none;
+      box-shadow: none;
+      color: var(--accent-text);
+    }
+    :global(html.js) .num {
+      display: inline;
+      min-width: 1.9rem;
+      color: var(--blue);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+    }
+    .nav ul a[aria-current='page'] .num {
+      color: var(--accent-text);
+    }
+    :global(html.js) .arrow {
+      display: inline;
+      margin-left: auto;
+      color: var(--text-muted);
+      font-family: var(--font);
+      font-size: 1.3rem;
+      font-weight: 400;
+    }
+    .nav ul a[aria-current='page'] .arrow {
+      color: var(--accent-text);
+    }
+
+    :global(html.js) .cta {
+      min-height: 56px;
+      margin-top: 1.5rem;
+      font-size: 1.1rem;
+    }
+    :global(html.js) .nav-foot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      margin: auto 0 0;
+      padding-top: 1.75rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    /* Ingresso animato: il pannello scende e le voci arrivano una dopo l'altra */
+    :global(html.js) .nav.open li,
+    :global(html.js) .nav.open .cta {
+      animation: voce 0.4s ease-out both;
+      animation-delay: calc(var(--i) * 55ms + 60ms);
+    }
+    @keyframes pannello {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+    }
+    @keyframes voce {
+      from {
+        opacity: 0;
+        transform: translateX(-16px);
+      }
+    }
+
+    /* Telefoni in orizzontale: voci più compatte, il pannello scorre */
+    @media (max-height: 520px) {
+      .nav ul a {
+        min-height: 52px;
+        padding-block: 0.6rem;
+        font-size: 1.25rem;
+      }
+      :global(html.js) .cta {
+        min-height: 50px;
+        margin-top: 1rem;
+      }
+      :global(html.js) .nav-foot {
+        display: none;
+      }
+    }
+
+    /* senza JS: le voci vanno a capo sotto il logo */
+    :global(html:not(.js)) .bar {
+      flex-wrap: wrap;
+      padding-block: 0.5rem;
+    }
+    :global(html:not(.js)) .nav {
+      flex-wrap: wrap;
+    }
+    :global(html:not(.js)) .nav ul {
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+  }
+</style>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
+  const nav = document.getElementById('site-nav');
+  const html = document.documentElement;
+  const desktop = window.matchMedia('(min-width: 901px)');
+
+  function setOpen(open: boolean) {
+    if (!toggle || !nav) return;
+    nav.classList.toggle('open', open);
+    html.classList.toggle('menu-open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Chiudi il menu' : 'Apri il menu');
+  }
+
+  toggle?.addEventListener('click', () => {
+    setOpen(toggle.getAttribute('aria-expanded') !== 'true');
+  });
+
+  // Chiudi con Esc (riportando il focus sul pulsante) o toccando una voce
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && toggle?.getAttribute('aria-expanded') === 'true') {
+      setOpen(false);
+      toggle.focus();
+    }
+  });
+  nav?.addEventListener('click', (e) => {
+    if ((e.target as HTMLElement).closest('a')) setOpen(false);
+  });
+
+  // Se si ingrandisce la finestra (o si ruota il tablet) il menu torna normale
+  desktop.addEventListener('change', (e) => {
+    if (e.matches) setOpen(false);
+  });
+
+  // Tornando indietro col browser la pagina può riapparire con il menu rimasto aperto
+  window.addEventListener('pageshow', () => setOpen(false));
+</script>

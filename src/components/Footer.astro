@@ -1,0 +1,162 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container grid">
+    <div class="about">
+      <a href="/" class="brand" aria-label="TambuTech - Home">
+        <img src="/logo-symbol.svg" alt="" width="40" height="46" loading="lazy" />
+        <span class="word"><b>Tambu</b><span>Tech</span></span>
+      </a>
+      <p class="muted">
+        Sviluppo app, progetti DIY, stampa 3D, elettronica e Arduino. Dall'idea al progetto finito.
+      </p>
+      <a
+        class="social"
+        href="https://www.instagram.com/tambu.tech/"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="TambuTech su Instagram (si apre in una nuova scheda)"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="5" />
+          <circle cx="12" cy="12" r="4" />
+          <circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" />
+        </svg>
+        <span>@tambu.tech</span>
+      </a>
+    </div>
+
+    <nav aria-label="Link del sito">
+      <h2>Il sito</h2>
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/preventivo/">Preventivo</a></li>
+        <li><a href="/progetti-realizzati/">Progetti realizzati</a></li>
+        <li><a href="/progetti-in-corso/">Progetti in corso</a></li>
+        <li><a href="/chi-sono/">Chi sono</a></li>
+      </ul>
+    </nav>
+
+    <div>
+      <h2>Hai un'idea?</h2>
+      <p class="muted">Raccontamela e ti preparo un preventivo gratuito e senza impegno.</p>
+      <a href="/preventivo/" class="btn btn-sm">Richiedi preventivo</a>
+    </div>
+  </div>
+
+  <div class="container legal">
+    <small>© {year} TambuTech · Federico Tamburrino · Porlezza (CO)</small>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    position: relative;
+    margin-top: 3rem;
+    background: var(--bg-elevated);
+    border-top: 1px solid var(--border);
+    padding-top: 3rem;
+  }
+  /* filo decorativo azzurro → cremisi sul bordo */
+  .site-footer::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--blue-line), var(--accent), transparent);
+  }
+  .grid {
+    display: grid;
+    gap: 2.25rem;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 720px) {
+    .grid {
+      grid-template-columns: 1.4fr 1fr 1.2fr;
+    }
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-height: 48px;
+    margin-bottom: 0.5rem;
+    text-decoration: none;
+  }
+  .brand img {
+    width: auto;
+    height: 44px;
+  }
+  .word {
+    font-family: var(--font-logo);
+    font-size: 1.45rem;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .word b {
+    font-weight: 800;
+    color: var(--blue);
+  }
+  .word span {
+    font-weight: 400;
+    color: var(--crimson-text);
+  }
+  .social {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 44px;
+    padding: 0 1rem 0 0.8rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    background: var(--bg);
+    color: var(--text);
+    font-weight: 500;
+    text-decoration: none;
+    transition:
+      border-color 0.15s,
+      color 0.15s;
+  }
+  .social svg {
+    color: var(--accent-text);
+  }
+  .social:hover {
+    border-color: var(--blue-line);
+    color: #fff;
+  }
+  h2 {
+    margin-bottom: 0.9rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--blue);
+  }
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  li a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--text);
+    text-decoration: none;
+  }
+  li a:hover {
+    color: var(--accent-text);
+  }
+  .legal {
+    margin-top: 2.5rem;
+    padding-top: 1.25rem;
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+</style>

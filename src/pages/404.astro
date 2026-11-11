@@ -1,0 +1,49 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Pagina non trovata"
+  description="La pagina che cerchi non esiste o è stata spostata."
+  noindex
+>
+  <section class="section">
+    <div class="container wrap">
+      <img src="/logo-symbol.svg" alt="" width="110" height="127" />
+      <span class="eyebrow">Errore 404</span>
+      <h1>Questa pagina <span class="gradient-text">non esiste</span>.</h1>
+      <p class="muted lead">
+        Il link potrebbe essere sbagliato o la pagina è stata spostata. Torna alla Home oppure
+        guarda i progetti.
+      </p>
+      <div class="actions">
+        <a href="/" class="btn">Torna alla Home</a>
+        <a href="/progetti-realizzati/" class="btn btn-ghost">Guarda i progetti</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .wrap {
+    display: grid;
+    justify-items: start;
+    padding-block: clamp(1rem, 6vw, 4rem);
+  }
+  .wrap img {
+    width: 84px;
+    height: auto;
+    margin-bottom: 1.5rem;
+    opacity: 0.9;
+  }
+  .lead {
+    max-width: 34rem;
+    font-size: 1.15rem;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+</style>

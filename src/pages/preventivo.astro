@@ -1,0 +1,524 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// Chiave pubblica di Web3Forms (si può mostrare nel sito: serve solo a dire
+// a Web3Forms a quale email recapitare i messaggi).
+const WEB3FORMS_KEY = 'f64d65d2-423b-4783-99a1-2f3914e6f1b5';
+
+const tipi = [
+  { value: 'Stampa 3D da un mio file', label: 'Ho già il file 3D', hint: 'STL, 3MF, STEP…' },
+  { value: 'Stampa 3D da un’idea', label: 'Ho solo un’idea', hint: 'Lo progettiamo insieme' },
+  { value: 'Elettronica / Arduino', label: 'Elettronica o Arduino', hint: 'Circuiti, automazioni' },
+  { value: 'App o altro progetto', label: 'App o altro progetto', hint: 'Raccontamelo' },
+];
+
+const materiali = ['Non lo so, consigliami tu', 'PLA', 'PETG', 'ABS / ASA', 'TPU (flessibile)', 'Altro'];
+
+const passi = [
+  { n: '01', t: 'Mi racconti il progetto', d: 'Compila il modulo: bastano poche righe, più dettagli dai e più preciso sarà il preventivo.' },
+  { n: '02', t: 'Ricevi il preventivo', d: 'Ti rispondo via email con prezzo e tempi, senza impegno.' },
+  { n: '03', t: 'Si stampa', d: 'Se ti va bene, parto con la produzione e ti aggiorno fino alla consegna.' },
+];
+---
+
+<BaseLayout
+  title="Richiedi un preventivo"
+  description="Richiedi un preventivo gratuito e senza impegno per stampa 3D personalizzata, elettronica, Arduino o sviluppo di un'app. Compila il modulo in due minuti."
+>
+  <section class="section head">
+    <div class="container">
+      <span class="eyebrow">Preventivo gratuito</span>
+      <h1>Raccontami il tuo <span class="gradient-text">progetto</span></h1>
+      <p class="muted lead">
+        Compila il modulo: ti rispondo via email con un preventivo, gratis e senza impegno.
+      </p>
+    </div>
+  </section>
+
+  <section class="container layout">
+    <form
+      id="quote-form"
+      class="card form"
+      action="https://api.web3forms.com/submit"
+      method="POST"
+      novalidate
+    >
+      <input type="hidden" name="access_key" value={WEB3FORMS_KEY} />
+      <input type="hidden" name="subject" value="Nuova richiesta di preventivo dal sito TambuTech" />
+      <input type="hidden" name="from_name" value="Sito TambuTech" />
+      <!-- anti-spam: i bot lo spuntano, le persone non lo vedono -->
+      <input type="checkbox" name="botcheck" class="sr-only" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+      <fieldset>
+        <legend>Di cosa hai bisogno?</legend>
+        <div class="pills">
+          {
+            tipi.map((t, i) => (
+              <label class="pill">
+                <input type="radio" name="tipo" value={t.value} checked={i === 0} />
+                <span class="pill-body">
+                  <strong>{t.label}</strong>
+                  <small>{t.hint}</small>
+                </span>
+              </label>
+            ))
+          }
+        </div>
+      </fieldset>
+
+      <div class="field">
+        <label for="descrizione">Descrivi cosa vuoi realizzare <span class="req">*</span></label>
+        <textarea
+          id="descrizione"
+          name="descrizione"
+          rows="5"
+          required
+          placeholder="A cosa serve, dimensioni indicative, dove verrà usato…"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="link-file">Link al file 3D o a un’immagine di riferimento <span class="opt">(facoltativo)</span></label>
+        <input
+          id="link-file"
+          name="link_file"
+          type="url"
+          inputmode="url"
+          placeholder="https://drive.google.com/… oppure Thingiverse, WeTransfer…"
+        />
+        <p class="hint">Carica il file su Google Drive, WeTransfer o simili e incolla qui il link.</p>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="materiale">Materiale</label>
+          <select id="materiale" name="materiale">
+            {materiali.map((m) => <option value={m}>{m}</option>)}
+          </select>
+        </div>
+        <div class="field">
+          <label for="colore">Colore</label>
+          <input id="colore" name="colore" type="text" placeholder="Es. nero, bianco…" />
+        </div>
+        <div class="field">
+          <label for="quantita">Quantità</label>
+          <input id="quantita" name="quantita" type="number" inputmode="numeric" min="1" value="1" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="scadenza">Entro quando ti serve? <span class="opt">(facoltativo)</span></label>
+        <input id="scadenza" name="scadenza" type="text" placeholder="Es. entro fine mese, nessuna fretta…" />
+      </div>
+
+      <hr />
+
+      <div class="row two">
+        <div class="field">
+          <label for="nome">Nome <span class="req">*</span></label>
+          <input id="nome" name="nome" type="text" autocomplete="name" required />
+        </div>
+        <div class="field">
+          <label for="email">Email <span class="req">*</span></label>
+          <input id="email" name="email" type="email" autocomplete="email" inputmode="email" required />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="telefono">Telefono <span class="opt">(facoltativo)</span></label>
+        <input id="telefono" name="telefono" type="tel" autocomplete="tel" inputmode="tel" />
+      </div>
+
+      <label class="consent">
+        <input type="checkbox" name="consenso" value="sì" required />
+        <span>
+          Acconsento al trattamento dei miei dati per ricevere il preventivo richiesto. Non
+          vengono usati per altri scopi.
+        </span>
+      </label>
+
+      <button type="submit" class="btn send">Invia la richiesta</button>
+
+      <p id="form-status" class="status" role="status" aria-live="polite"></p>
+    </form>
+
+    <aside class="side">
+      <div class="card">
+        <h2>Come funziona</h2>
+        <ol class="steps">
+          {
+            passi.map((p) => (
+              <li>
+                <span class="n">{p.n}</span>
+                <div>
+                  <h3>{p.t}</h3>
+                  <p class="muted">{p.d}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+
+      <div class="card follow">
+        <h2>Seguimi</h2>
+        <p class="muted">Sul mio Instagram trovi i lavori appena usciti dalla stampante.</p>
+        <a
+          class="btn btn-ghost btn-sm"
+          href="https://www.instagram.com/tambu.tech/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          @tambu.tech <span aria-hidden="true">↗</span><span class="sr-only"> (si apre in una nuova scheda)</span>
+        </a>
+      </div>
+    </aside>
+  </section>
+</BaseLayout>
+
+<style>
+  .head {
+    padding-bottom: 1.5rem;
+  }
+  .lead {
+    max-width: 36rem;
+    font-size: 1.15rem;
+  }
+
+  .layout {
+    display: grid;
+    gap: 1.5rem;
+    padding-bottom: 2rem;
+  }
+  @media (min-width: 920px) {
+    .layout {
+      grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+      align-items: start;
+    }
+    .side {
+      position: sticky;
+      top: calc(var(--header-h) + 1.5rem);
+    }
+  }
+
+  .form {
+    display: grid;
+    gap: 1.25rem;
+    padding: clamp(1.1rem, 4vw, 2rem);
+  }
+
+  fieldset {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+  }
+  legend,
+  label {
+    font-weight: 600;
+    font-size: 0.97rem;
+  }
+  legend {
+    margin-bottom: 0.6rem;
+    padding: 0;
+  }
+  .field {
+    display: grid;
+    gap: 0.4rem;
+  }
+  .req {
+    color: var(--accent-text);
+  }
+  .opt {
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+  .hint {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+  }
+
+  input[type='text'],
+  input[type='email'],
+  input[type='tel'],
+  input[type='url'],
+  input[type='number'],
+  select,
+  textarea {
+    width: 100%;
+    min-height: 48px;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 1rem; /* 16px: evita lo zoom automatico su iPhone */
+    transition:
+      border-color 0.15s,
+      box-shadow 0.15s;
+  }
+  textarea {
+    resize: vertical;
+    min-height: 130px;
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: color-mix(in srgb, var(--text-muted) 75%, transparent);
+  }
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: none;
+    border-color: var(--blue-line);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue-line) 35%, transparent);
+  }
+  .invalid {
+    border-color: var(--accent) !important;
+  }
+
+  .row {
+    display: grid;
+    gap: 1.25rem;
+  }
+  @media (min-width: 560px) {
+    .row {
+      grid-template-columns: 1.4fr 1fr 0.7fr;
+    }
+    .row.two {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  hr {
+    width: 100%;
+    margin: 0.25rem 0;
+    border: 0;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Scelta del tipo di richiesta */
+  .pills {
+    display: grid;
+    gap: 0.6rem;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 560px) {
+    .pills {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .pill {
+    position: relative;
+    cursor: pointer;
+  }
+  .pill input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    cursor: pointer;
+  }
+  .pill-body {
+    display: grid;
+    gap: 0.1rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--bg);
+    transition:
+      border-color 0.15s,
+      background-color 0.15s;
+  }
+  .pill-body strong {
+    font-weight: 600;
+  }
+  .pill-body small {
+    color: var(--text-muted);
+  }
+  .pill:hover .pill-body {
+    border-color: var(--blue-line);
+  }
+  .pill input:checked + .pill-body {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 14%, var(--bg));
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+  .pill input:focus-visible + .pill-body {
+    outline: 3px solid var(--blue);
+    outline-offset: 2px;
+  }
+
+  .consent {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    font-weight: 400;
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    cursor: pointer;
+  }
+  .consent input {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    margin: 0.1rem 0 0;
+    accent-color: var(--accent);
+  }
+
+  .send {
+    width: 100%;
+    min-height: 54px;
+    font-size: 1.05rem;
+  }
+  .send:disabled {
+    opacity: 0.6;
+    cursor: wait;
+    transform: none;
+  }
+
+  .status {
+    margin: 0;
+    padding: 0;
+    font-weight: 600;
+  }
+  .status:empty {
+    display: none;
+  }
+  .status.ok,
+  .status.err {
+    padding: 0.9rem 1rem;
+    border-radius: var(--radius);
+    border: 1px solid;
+  }
+  .status.ok {
+    color: #9be3b4;
+    background: rgba(70, 180, 110, 0.12);
+    border-color: rgba(70, 180, 110, 0.4);
+  }
+  .status.err {
+    color: #ffb4c4;
+    background: rgba(194, 62, 104, 0.15);
+    border-color: rgba(194, 62, 104, 0.5);
+  }
+
+  .side {
+    display: grid;
+    gap: 1.25rem;
+  }
+  .follow p {
+    margin-bottom: 1rem;
+  }
+
+  /* Come funziona */
+  .side h2 {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+  }
+  .steps {
+    display: grid;
+    gap: 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .steps li {
+    display: flex;
+    gap: 0.9rem;
+  }
+  .steps h3 {
+    margin-bottom: 0.15rem;
+    font-size: 1.05rem;
+  }
+  .steps p {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+  .n {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: var(--accent-text);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+</style>
+
+<script>
+  const form = document.getElementById('quote-form') as HTMLFormElement | null;
+  const status = document.getElementById('form-status');
+  const button = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
+
+  function show(msg: string, kind: 'ok' | 'err') {
+    if (!status) return;
+    status.textContent = msg;
+    status.className = `status ${kind}`;
+    status.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!form || !button) return;
+
+    // validazione con messaggi in italiano
+    form.querySelectorAll('.invalid').forEach((el) => el.classList.remove('invalid'));
+    const bad = Array.from(form.querySelectorAll<HTMLInputElement>('[required]')).find(
+      (el) => !el.checkValidity()
+    );
+    if (bad) {
+      bad.classList.add('invalid');
+      bad.focus();
+      show(
+        bad.type === 'checkbox'
+          ? 'Per inviare la richiesta devi accettare il trattamento dei dati.'
+          : bad.type === 'email'
+            ? 'Controlla l’indirizzo email: sembra non essere corretto.'
+            : 'Compila i campi contrassegnati con * per poter inviare la richiesta.',
+        'err'
+      );
+      return;
+    }
+    const url = form.querySelector<HTMLInputElement>('#link-file');
+    if (url && url.value && !url.checkValidity()) {
+      url.classList.add('invalid');
+      url.focus();
+      show('Il link al file non sembra valido: deve iniziare con https://', 'err');
+      return;
+    }
+
+    const original = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Invio in corso…';
+    status && (status.className = 'status');
+    status && (status.textContent = '');
+
+    try {
+      const data = Object.fromEntries(new FormData(form));
+      const res = await fetch(form.action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (res.ok && json.success) {
+        form.reset();
+        show('Richiesta inviata! Ti rispondo via email appena possibile. Grazie!', 'ok');
+      } else {
+        show(
+          'Non sono riuscito a inviare la richiesta. Riprova tra poco oppure scrivimi direttamente.',
+          'err'
+        );
+      }
+    } catch {
+      show('Problema di connessione: controlla internet e riprova.', 'err');
+    } finally {
+      button.disabled = false;
+      button.textContent = original;
+    }
+  });
+</script>

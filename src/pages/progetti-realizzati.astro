@@ -1,0 +1,168 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { categorie, type Categoria } from '../lib/progetti';
+
+const progetti = (await getCollection('progetti', ({ data }) => data.stato === 'realizzato')).sort(
+  (a, b) => a.data.ordine - b.data.ordine
+);
+
+// Mostro solo le categorie che hanno almeno un progetto
+const presenti = (Object.keys(categorie) as Categoria[]).filter((c) =>
+  progetti.some((p) => p.data.categoria === c)
+);
+---
+
+<BaseLayout
+  title="Progetti realizzati"
+  description="I lavori di TambuTech: stampa 3D personalizzata, elettronica con Arduino, app e progetti DIY. Guarda cosa posso realizzare per te."
+>
+  <section class="section head">
+    <div class="container">
+      <span class="eyebrow">Portfolio</span>
+      <h1>Progetti <span class="gradient-text">realizzati</span></h1>
+      <p class="muted lead">
+        Un po' di lavori usciti dal mio laboratorio: stampe 3D, circuiti, programmi e idee DIY.
+        Tocca un progetto per vedere le foto e i dettagli.
+      </p>
+
+      <div class="filters" role="group" aria-label="Filtra per categoria" hidden>
+        <button type="button" class="chip active" data-filtro="tutti" aria-pressed="true">
+          Tutti <span>{progetti.length}</span>
+        </button>
+        {
+          presenti.map((c) => (
+            <button type="button" class="chip" data-filtro={c} aria-pressed="false">
+              {categorie[c]}{' '}
+              <span>{progetti.filter((p) => p.data.categoria === c).length}</span>
+            </button>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="container grid-wrap">
+    <h2 class="sr-only">Elenco dei progetti</h2>
+    <div class="grid" id="griglia">
+      {progetti.map((entry) => <ProjectCard entry={entry} />)}
+    </div>
+  </section>
+
+  <section class="section tight">
+    <div class="container">
+      <div class="cta-band">
+        <div>
+          <h2>Ti serve qualcosa di simile?</h2>
+          <p class="muted">Raccontami l'idea: il preventivo è gratuito e senza impegno.</p>
+        </div>
+        <a href="/preventivo/" class="btn">Richiedi preventivo</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .head {
+    padding-bottom: 1rem;
+  }
+  .lead {
+    max-width: 38rem;
+    font-size: 1.15rem;
+  }
+  .grid {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+    padding-bottom: 1.5rem;
+  }
+  .tight {
+    padding-block: clamp(1.5rem, 4vw, 2.5rem);
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+  }
+  .filters[hidden] {
+    display: none;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0.35rem 1rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    background: var(--bg-elevated);
+    color: var(--text-muted);
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+      color 0.15s,
+      border-color 0.15s,
+      background-color 0.15s;
+  }
+  .chip span {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    opacity: 0.7;
+  }
+  .chip:hover {
+    color: var(--text);
+    border-color: var(--blue-line);
+  }
+  .chip.active {
+    color: var(--text);
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 16%, var(--bg-elevated));
+  }
+
+  .cta-band {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: clamp(1.5rem, 5vw, 2.5rem);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    background:
+      radial-gradient(ellipse 60% 120% at 100% 0%, rgba(194, 62, 104, 0.2), transparent 70%),
+      radial-gradient(ellipse 60% 120% at 0% 100%, rgba(64, 131, 176, 0.18), transparent 70%),
+      var(--bg-elevated);
+  }
+  .cta-band h2 {
+    margin-bottom: 0.3rem;
+  }
+  .cta-band p {
+    margin: 0;
+  }
+</style>
+
+<script>
+  // I filtri compaiono solo se JavaScript è attivo: senza, si vedono comunque tutti i progetti.
+  const bar = document.querySelector<HTMLElement>('.filters');
+  const cards = document.querySelectorAll<HTMLElement>('#griglia .project');
+  bar?.removeAttribute('hidden');
+
+  bar?.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.chip');
+    if (!btn) return;
+    const filtro = btn.dataset.filtro;
+    bar.querySelectorAll('.chip').forEach((c) => {
+      const on = c === btn;
+      c.classList.toggle('active', on);
+      c.setAttribute('aria-pressed', String(on));
+    });
+    cards.forEach((card) => {
+      card.hidden = !(filtro === 'tutti' || card.dataset.categoria === filtro);
+    });
+  });
+</script>

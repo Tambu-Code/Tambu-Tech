@@ -1,0 +1,315 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+import maschera from '../assets/foto/maschera-iron-man.jpg';
+import portachiavi from '../assets/foto/portachiavi-amg-1.jpg';
+import techdiaryHome from '../assets/foto/techdiary-home.png';
+import techdiaryProgetto from '../assets/foto/techdiary-progetto.png';
+import campionario from '../assets/foto/campionario-colori.jpg';
+import arduino from '../assets/foto/arduino-matrice-led.jpg';
+import organizer from '../assets/foto/organizer-scrivania.jpg';
+
+const services = [
+  {
+    title: 'Stampa 3D su misura',
+    text: 'Dal file al pezzo finito con la mia Bambu Lab. PLA, PETG e ABS in tanti colori: ti aiuto a scegliere quello giusto.',
+    img: campionario,
+    alt: 'Campionario di colori e materiali stampati in 3D (PLA, PETG, ABS) dentro la stampante',
+    pos: '50% 55%',
+  },
+  {
+    title: 'Elettronica e Arduino',
+    text: 'Circuiti su breadboard, sensori, display e matrici LED: dal prototipo al dispositivo che funziona.',
+    img: arduino,
+    alt: 'Matrice LED 8x8 collegata a una scheda Arduino su breadboard',
+    pos: '55% 70%',
+  },
+  {
+    title: 'Sviluppo app',
+    text: 'Creo le app che mi servono per lavorare, come TechDiary: il diario dei lavori con costi, materiali e prezzo suggerito.',
+    img: techdiaryProgetto,
+    alt: 'Schermata dell’app TechDiary con i costi di un progetto di stampa 3D',
+    pos: '50% 0%',
+  },
+  {
+    title: 'Progetti DIY',
+    text: 'Organizer, maschere e oggetti utili: idee che nascono sul banco di lavoro e finiscono stampate.',
+    img: organizer,
+    alt: 'Organizer da scrivania stampato in 3D con portapenne e cassetto rosso',
+    pos: '50% 65%',
+  },
+];
+
+const passi = [
+  { n: '01', t: 'Mi racconti l’idea', d: 'Compili il modulo: bastano poche righe su cosa vuoi realizzare.' },
+  { n: '02', t: 'Ricevi il preventivo', d: 'Ti rispondo via email con prezzo e tempi, gratis e senza impegno.' },
+  { n: '03', t: 'Lo realizzo', d: 'Se ti va bene parto subito e ti aggiorno fino alla consegna.' },
+];
+---
+
+<BaseLayout
+  title="TambuTech - Stampa 3D, Arduino, app e progetti DIY"
+  description="TambuTech: stampa 3D personalizzata, elettronica e Arduino, sviluppo di app e progetti DIY. Richiedi un preventivo gratuito per il tuo progetto."
+>
+  <section class="hero">
+    <div class="container hero-grid">
+      <div class="copy">
+        <span class="eyebrow">App · DIY · 3D print · Electronics</span>
+        <h1>
+          Dall'idea al <span class="gradient-text">progetto finito</span>.
+        </h1>
+        <p class="lead muted">
+          TambuTech è il mio laboratorio: stampo in 3D, programmo Arduino, sviluppo app e porto a
+          termine progetti DIY. Hai un'idea? Raccontamela e ricevi un preventivo gratuito e senza
+          impegno.
+        </p>
+        <div class="actions">
+          <a href="/preventivo/" class="btn">Richiedi preventivo</a>
+          <a href="/progetti-realizzati/" class="btn btn-ghost">Guarda i progetti</a>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="glow" aria-hidden="true"></div>
+        <figure class="shot f1">
+          <Image src={maschera} alt="Maschera di Iron Man dorata stampata in 3D, con effetto danneggiato in battaglia" widths={[240, 360, 480]} sizes="(min-width: 860px) 200px, 40vw" quality={75} loading="eager" />
+          <figcaption>Stampa 3D</figcaption>
+        </figure>
+        <figure class="shot f2">
+          <Image src={portachiavi} alt="Portachiavi stampato in 3D in due colori, rosso e grigio" widths={[300, 450, 600]} sizes="(min-width: 860px) 230px, 48vw" quality={75} loading="eager" fetchpriority="high" />
+          <figcaption>Su misura</figcaption>
+        </figure>
+        <figure class="shot f3">
+          <Image src={techdiaryHome} alt="Schermata principale dell’app TechDiary con l’elenco dei progetti" widths={[240, 360, 480]} sizes="(min-width: 860px) 180px, 38vw" quality={75} loading="eager" />
+          <figcaption>App</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <span class="eyebrow">Cosa faccio</span>
+      <h2>Quattro mondi, un solo laboratorio</h2>
+      <div class="cards">
+        {
+          services.map((s) => (
+            <article class="card hover">
+              <div class="thumb">
+                <Image src={s.img} alt={s.alt} widths={[360, 540, 720]} sizes="(min-width: 1120px) 260px, (min-width: 560px) 45vw, 90vw" quality={72} style={`object-position:${s.pos}`} />
+              </div>
+              <h3>{s.title}</h3>
+              <p class="muted">{s.text}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section tight">
+    <div class="container">
+      <span class="eyebrow">Come funziona</span>
+      <h2>Dal messaggio alla consegna in tre passi</h2>
+      <ol class="steps">
+        {
+          passi.map((p) => (
+            <li class="card">
+              <span class="n">{p.n}</span>
+              <h3>{p.t}</h3>
+              <p class="muted">{p.d}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <section class="section tight">
+    <div class="container">
+      <div class="cta-band">
+        <div>
+          <h2>Hai un progetto in mente?</h2>
+          <p class="muted">Anche solo un'idea abbozzata: parliamone, il preventivo è gratuito.</p>
+        </div>
+        <a href="/preventivo/" class="btn">Richiedi preventivo</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    padding-block: clamp(2.5rem, 8vw, 5.5rem) clamp(1.5rem, 5vw, 3rem);
+  }
+  .hero-grid {
+    display: grid;
+    gap: 2.5rem;
+    align-items: center;
+  }
+  @media (min-width: 860px) {
+    .hero-grid {
+      grid-template-columns: 1.05fr 0.95fr;
+    }
+  }
+  .lead {
+    max-width: 34rem;
+    font-size: 1.15rem;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.75rem;
+  }
+
+  /* Composizione di foto sovrapposte */
+  .stack {
+    position: relative;
+    width: min(100%, 460px);
+    aspect-ratio: 1 / 0.8;
+    margin-inline: auto;
+  }
+  .glow {
+    position: absolute;
+    inset: 5%;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 25% 35%, rgba(64, 131, 176, 0.45), transparent 60%),
+      radial-gradient(circle at 75% 70%, rgba(194, 62, 104, 0.45), transparent 60%);
+    filter: blur(45px);
+  }
+  .shot {
+    position: absolute;
+    margin: 0;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    border: 1px solid var(--border-strong);
+    border-radius: 14px;
+    background: var(--bg-elevated);
+    box-shadow: 0 20px 40px -14px rgba(0, 0, 0, 0.75);
+  }
+  .shot :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .shot figcaption {
+    position: absolute;
+    left: 8px;
+    bottom: 8px;
+    padding: 0.15rem 0.5rem;
+    border-radius: 6px;
+    background: rgba(15, 20, 29, 0.75);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .f1 {
+    left: 0;
+    top: 14%;
+    width: 41%;
+    transform: rotate(-6deg);
+    z-index: 1;
+  }
+  .f2 {
+    left: 25%;
+    top: 0;
+    width: 50%;
+    transform: rotate(1.5deg);
+    z-index: 3;
+  }
+  .f3 {
+    right: 0;
+    top: 17%;
+    width: 38%;
+    transform: rotate(6deg);
+    z-index: 2;
+  }
+  .f1 :global(img) {
+    object-position: 50% 75%;
+  }
+  .f3 :global(img) {
+    object-position: top;
+  }
+
+  .tight {
+    padding-block: clamp(1.5rem, 4vw, 2.5rem);
+  }
+
+  .cards {
+    display: grid;
+    gap: 1.1rem;
+    margin-top: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+  .card h3 {
+    margin-bottom: 0.4rem;
+  }
+  .card p {
+    margin: 0;
+  }
+  .thumb {
+    aspect-ratio: 4 / 3;
+    margin-bottom: 1.1rem;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: var(--bg);
+    border: 1px solid var(--border);
+  }
+  .thumb :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s;
+  }
+  @media (hover: hover) {
+    .card:hover .thumb :global(img) {
+      transform: scale(1.05);
+    }
+  }
+
+  .steps {
+    display: grid;
+    gap: 1.1rem;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+  .n {
+    display: inline-block;
+    margin-bottom: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--blue);
+    letter-spacing: 0.1em;
+  }
+
+  .cta-band {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: clamp(1.5rem, 5vw, 2.5rem);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    background:
+      radial-gradient(ellipse 60% 120% at 100% 0%, rgba(194, 62, 104, 0.2), transparent 70%),
+      radial-gradient(ellipse 60% 120% at 0% 100%, rgba(64, 131, 176, 0.18), transparent 70%),
+      var(--bg-elevated);
+  }
+  .cta-band h2 {
+    margin-bottom: 0.3rem;
+  }
+  .cta-band p {
+    margin: 0;
+  }
+</style>

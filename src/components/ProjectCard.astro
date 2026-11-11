@@ -1,0 +1,157 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { categorie } from '../lib/progetti';
+
+interface Props {
+  entry: CollectionEntry<'progetti'>;
+}
+
+const { entry } = Astro.props;
+const { titolo, categoria, riassunto, foto, posizioneCopertina, copertina, stato, avanzamento } =
+  entry.data;
+const cover = foto[0];
+const fatti = avanzamento.filter((p) => p.fatto).length;
+const percento = avanzamento.length ? Math.round((fatti / avanzamento.length) * 100) : 0;
+---
+
+<a href={`/progetti/${entry.id}/`} class="card hover project" data-categoria={categoria}>
+  <div class={`thumb ${copertina}`}>
+    <Image
+      src={cover.src}
+      alt={cover.alt}
+      widths={[360, 540, 720]}
+      sizes="(min-width: 1120px) 340px, (min-width: 640px) 45vw, 92vw"
+      quality={72}
+      style={`object-position:${posizioneCopertina}`}
+    />
+    <div class="tags">
+      <span class="tag">{categorie[categoria]}</span>
+      {stato === 'in-corso' && <span class="tag wip">In sviluppo</span>}
+    </div>
+    {foto.length > 1 && <span class="count">{foto.length} foto</span>}
+  </div>
+  <h3>{titolo}</h3>
+  <p class="muted">{riassunto}</p>
+  {
+    avanzamento.length > 0 && (
+      <div class="progress" aria-label={`Avanzamento: ${fatti} passi su ${avanzamento.length}`}>
+        <div class="bar"><span style={`width:${percento}%`}></span></div>
+        <small>{fatti} passi su {avanzamento.length}</small>
+      </div>
+    )
+  }
+  <span class="more">Scopri il progetto <span aria-hidden="true">→</span></span>
+</a>
+
+<style>
+  .project {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 1rem 1.4rem;
+  }
+  .project[hidden] {
+    display: none;
+  }
+  .thumb {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    margin-bottom: 1.1rem;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: var(--bg);
+    border: 1px solid var(--border);
+  }
+  .thumb :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s;
+  }
+  @media (hover: hover) {
+    .project:hover .thumb :global(img) {
+      transform: scale(1.05);
+    }
+  }
+  .thumb.contain {
+    background:
+      radial-gradient(circle at 50% 55%, rgba(64, 131, 176, 0.28), transparent 65%), var(--bg);
+  }
+  .thumb.contain :global(img) {
+    object-fit: contain;
+    padding: 0.5rem;
+  }
+  .progress {
+    margin: 0 0.4rem 1rem;
+  }
+  .bar {
+    height: 6px;
+    border-radius: 6px;
+    background: var(--bg-soft);
+    overflow: hidden;
+  }
+  .bar span {
+    display: block;
+    height: 100%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--blue-line), var(--accent));
+  }
+  .progress small {
+    display: block;
+    margin-top: 0.35rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+  }
+  .tags {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .tag,
+  .count {
+    padding: 0.15rem 0.55rem;
+    border-radius: 6px;
+    background: rgba(15, 20, 29, 0.78);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .tag {
+    color: var(--blue);
+  }
+  .tag.wip {
+    color: var(--accent-text);
+  }
+  .count {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    color: var(--text);
+  }
+  h3 {
+    margin: 0 0.4rem 0.4rem;
+  }
+  p {
+    flex: 1;
+    margin: 0 0.4rem 1rem;
+    font-size: 0.98rem;
+  }
+  .more {
+    margin-inline: 0.4rem;
+    color: var(--accent-text);
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .project:hover .more {
+    color: #fff;
+  }
+</style>

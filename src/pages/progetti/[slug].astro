@@ -1,0 +1,296 @@
+---
+import { getCollection, render } from 'astro:content';
+import { Image, getImage } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { categorie } from '../../lib/progetti';
+
+export async function getStaticPaths() {
+  const progetti = await getCollection('progetti');
+  return progetti.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { titolo, categoria, stato, riassunto, foto, dettagli, link, avanzamento } = entry.data;
+const fatti = avanzamento.filter((p) => p.fatto).length;
+const { Content } = await render(entry);
+
+const og = await getImage({ src: foto[0].src, width: 1200, height: 630, fit: 'cover', format: 'jpg' });
+const indietro =
+  stato === 'in-corso'
+    ? { href: '/progetti-in-corso/', label: 'Progetti in corso' }
+    : { href: '/progetti-realizzati/', label: 'Progetti realizzati' };
+---
+
+<BaseLayout title={titolo} description={riassunto} image={og.src}>
+  <article class="container page">
+    <a class="back" href={indietro.href}><span aria-hidden="true">←</span> {indietro.label}</a>
+
+    <div class="layout">
+      <div class="info">
+        <span class="eyebrow">{categorie[categoria]}{stato === 'in-corso' ? ' · In sviluppo' : ''}</span>
+        <h1>{titolo}</h1>
+        <p class="lead muted">{riassunto}</p>
+
+        <div class="prose">
+          <Content />
+        </div>
+
+        {
+          avanzamento.length > 0 && (
+            <section class="steps" aria-labelledby="avanzamento">
+              <h2 id="avanzamento">
+                Avanzamento <span>{fatti} su {avanzamento.length}</span>
+              </h2>
+              <ol>
+                {avanzamento.map((p) => (
+                  <li class={p.fatto ? 'done' : ''}>
+                    <span class="mark" aria-hidden="true">{p.fatto ? '✓' : ''}</span>
+                    <span>
+                      {p.voce}
+                      <span class="sr-only">{p.fatto ? ' (fatto)' : ' (da fare)'}</span>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )
+        }
+
+        {
+          dettagli.length > 0 && (
+            <dl class="details">
+              {dettagli.map((d) => (
+                <div>
+                  <dt>{d.etichetta}</dt>
+                  <dd>{d.valore}</dd>
+                </div>
+              ))}
+            </dl>
+          )
+        }
+
+        {
+          link.length > 0 && (
+            <p class="links">
+              {link.map((l) => (
+                <a class="btn btn-ghost btn-sm" href={l.url} target="_blank" rel="noopener noreferrer">
+                  {l.etichetta} <span aria-hidden="true">↗</span>
+                </a>
+              ))}
+            </p>
+          )
+        }
+
+        <div class="cta card">
+          <h2>Ti serve qualcosa di simile?</h2>
+          <p class="muted">Raccontami l'idea: il preventivo è gratuito e senza impegno.</p>
+          <a href="/preventivo/" class="btn">Richiedi preventivo</a>
+        </div>
+      </div>
+
+      <div class="gallery">
+        {
+          foto.map((f, i) => (
+            <figure>
+              <Image
+                src={f.src}
+                alt={f.alt}
+                widths={[480, 720, 960]}
+                sizes="(min-width: 920px) 520px, 92vw"
+                quality={78}
+                loading={i === 0 ? 'eager' : 'lazy'}
+                fetchpriority={i === 0 ? 'high' : 'auto'}
+              />
+            </figure>
+          ))
+        }
+      </div>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .page {
+    padding-block: clamp(1.5rem, 4vw, 3rem) 1rem;
+  }
+  .back {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-bottom: 0.75rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.95rem;
+  }
+  .back:hover {
+    color: var(--text);
+  }
+
+  .layout {
+    display: grid;
+    gap: 2rem;
+  }
+  @media (min-width: 920px) {
+    .layout {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 0.95fr);
+      align-items: start;
+      gap: 3rem;
+    }
+    .gallery {
+      order: 2;
+    }
+  }
+  /* su telefono la galleria viene prima del testo */
+  .gallery {
+    display: grid;
+    gap: 1rem;
+    order: -1;
+  }
+  @media (min-width: 920px) {
+    .gallery {
+      order: 2;
+    }
+  }
+  figure {
+    margin: 0;
+    padding: 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--bg-elevated);
+    box-shadow: var(--shadow);
+  }
+  figure :global(img) {
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 72vh;
+    margin-inline: auto;
+    border-radius: var(--radius);
+  }
+
+  h1 {
+    font-size: clamp(2rem, 6vw, 3rem);
+  }
+  .lead {
+    font-size: 1.15rem;
+  }
+
+  .prose {
+    margin-top: 1.5rem;
+  }
+  .prose :global(p),
+  .prose :global(li) {
+    color: color-mix(in srgb, var(--text) 88%, var(--text-muted));
+  }
+  .prose :global(ul) {
+    padding-left: 1.2rem;
+  }
+  .prose :global(strong) {
+    color: var(--text);
+  }
+
+  .steps {
+    margin-top: 1.75rem;
+  }
+  .steps h2 {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    font-size: 1.2rem;
+  }
+  .steps h2 span {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+  .steps ol {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .steps li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-elevated);
+    color: var(--text-muted);
+  }
+  .steps li.done {
+    color: var(--text);
+    border-color: color-mix(in srgb, var(--blue-line) 55%, var(--border));
+  }
+  .mark {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid var(--border-strong);
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .done .mark {
+    border-color: transparent;
+    background: linear-gradient(135deg, var(--blue-line), var(--accent));
+    color: #fff;
+  }
+
+  .details {
+    display: grid;
+    gap: 0;
+    margin: 1.75rem 0 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .details div {
+    display: grid;
+    gap: 0.1rem;
+    padding: 0.8rem 1rem;
+    background: var(--bg-elevated);
+  }
+  .details div + div {
+    border-top: 1px solid var(--border);
+  }
+  @media (min-width: 560px) {
+    .details div {
+      grid-template-columns: 9rem 1fr;
+      gap: 1rem;
+    }
+  }
+  dt {
+    color: var(--blue);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    align-self: center;
+  }
+  dd {
+    margin: 0;
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin: 1.25rem 0 0;
+  }
+
+  .cta {
+    margin-top: 2rem;
+  }
+  .cta h2 {
+    font-size: 1.35rem;
+    margin-bottom: 0.3rem;
+  }
+</style>

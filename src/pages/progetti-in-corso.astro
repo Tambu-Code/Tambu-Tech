@@ -1,0 +1,84 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+
+const progetti = (await getCollection('progetti', ({ data }) => data.stato === 'in-corso')).sort(
+  (a, b) => a.data.ordine - b.data.ordine
+);
+---
+
+<BaseLayout
+  title="Progetti in corso"
+  description="Cosa sto costruendo adesso in TambuTech: l'app TechDiary e il Deck Mk1, uno Stream Deck fai-da-te con Arduino. Segui l'avanzamento dei lavori."
+>
+  <section class="section head">
+    <div class="container">
+      <span class="eyebrow">Work in progress</span>
+      <h1>Progetti <span class="gradient-text">in corso</span></h1>
+      <p class="muted lead">
+        Quello che sto costruendo in questo momento. Qui vedi a che punto sono: i progetti
+        finiti passano poi tra i progetti realizzati.
+      </p>
+    </div>
+  </section>
+
+  <section class="container">
+    <h2 class="sr-only">Elenco dei progetti in corso</h2>
+    <div class="grid">
+      {progetti.map((entry) => <ProjectCard entry={entry} />)}
+    </div>
+  </section>
+
+  <section class="section tight">
+    <div class="container">
+      <div class="cta-band">
+        <div>
+          <h2>Hai un'idea tutta tua?</h2>
+          <p class="muted">Anche i miei progetti sono partiti da un'idea. Raccontami la tua.</p>
+        </div>
+        <a href="/preventivo/" class="btn">Richiedi preventivo</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .head {
+    padding-bottom: 1rem;
+  }
+  .lead {
+    max-width: 38rem;
+    font-size: 1.15rem;
+  }
+  .grid {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+    padding-bottom: 1.5rem;
+  }
+  .tight {
+    padding-block: clamp(1.5rem, 4vw, 2.5rem);
+  }
+
+  .cta-band {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: clamp(1.5rem, 5vw, 2.5rem);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    background:
+      radial-gradient(ellipse 60% 120% at 100% 0%, rgba(194, 62, 104, 0.2), transparent 70%),
+      radial-gradient(ellipse 60% 120% at 0% 100%, rgba(64, 131, 176, 0.18), transparent 70%),
+      var(--bg-elevated);
+  }
+  .cta-band h2 {
+    margin-bottom: 0.3rem;
+  }
+  .cta-band p {
+    margin: 0;
+  }
+</style>

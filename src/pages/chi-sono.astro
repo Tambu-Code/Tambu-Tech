@@ -1,0 +1,311 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const tappe = [
+  {
+    t: 'I computer, da sempre',
+    d: 'Fin da piccolo mi piace usare i computer e capire come funzionano.',
+  },
+  {
+    t: 'Informatica a scuola',
+    d: 'Per questo ho scelto l’indirizzo di informatica, e continuo a studiarla.',
+  },
+  {
+    t: 'La stampa 3D',
+    d: 'Poi è arrivata la stampa 3D. Disegnare un oggetto in 3D e vederlo prendere forma è diventata la mia cosa preferita.',
+  },
+  {
+    t: 'L’elettronica',
+    d: 'Mi sono appassionato all’elettronica: con Arduino, circuiti e sensori gli oggetti non si limitano a stare fermi, fanno qualcosa.',
+  },
+  {
+    t: 'Le app',
+    d: 'Con le conoscenze che avevo ho iniziato a provare a sviluppare app, come TechDiary, che sto costruendo adesso.',
+  },
+];
+
+const facts = [
+  { k: 'Nome', v: 'Federico Tamburrino' },
+  { k: 'Dove', v: 'Porlezza (CO)' },
+  { k: 'Studio', v: 'Informatica' },
+  { k: 'Faccio', v: 'Stampa 3D, Arduino, app, DIY' },
+];
+---
+
+<BaseLayout
+  title="Chi sono"
+  description="Sono Federico Tamburrino, di Porlezza (Como). Studio informatica e con TambuTech realizzo stampe 3D, progetti con Arduino, app e idee DIY."
+>
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <span class="eyebrow">Chi sono</span>
+        <h1>Ciao, sono <span class="gradient-text">Federico</span>.</h1>
+        <p class="lead muted">
+          Studio informatica e sono di Porlezza, in provincia di Como. TambuTech è il mio laboratorio:
+          qui stampo in 3D, programmo Arduino, sviluppo app e provo a trasformare le idee in cose
+          vere, le mie e le tue.
+        </p>
+        <div class="actions">
+          <a href="/preventivo/" class="btn">Richiedi preventivo</a>
+          <a href="/progetti-realizzati/" class="btn btn-ghost">Guarda i progetti</a>
+        </div>
+      </div>
+
+      <aside class="idcard card" aria-label="In breve">
+        <div class="glow" aria-hidden="true"></div>
+        <img src="/logo-symbol.svg" alt="" width="120" height="139" />
+        <dl>
+          {
+            facts.map((f) => (
+              <div>
+                <dt>{f.k}</dt>
+                <dd>{f.v}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </aside>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container story">
+      <div>
+        <span class="eyebrow">La mia storia</span>
+        <h2>Da un computer a un laboratorio</h2>
+        <p class="muted">
+          Non è nato tutto insieme: ogni passione mi ha portato alla successiva, e oggi si
+          mescolano nei miei progetti.
+        </p>
+      </div>
+
+      <ol class="timeline">
+        {
+          tappe.map((s, i) => (
+            <li>
+              <span class="dot" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+              <div>
+                <h3>{s.t}</h3>
+                <p class="muted">{s.d}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <section class="section tight">
+    <div class="container">
+      <figure class="quote card">
+        <blockquote>
+          Il mio obiettivo è rendere possibile ogni idea.
+        </blockquote>
+        <figcaption>
+          Disegnare in 3D è la cosa che mi piace di più, ma quello che mi interessa davvero è
+          trovare il modo di far funzionare quello che hai in mente: stampato, programmato o
+          cablato.
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section tight">
+    <div class="container">
+      <div class="cta-band">
+        <div>
+          <h2>Hai un'idea da realizzare?</h2>
+          <p class="muted">Scrivimi: il preventivo è gratuito e senza impegno.</p>
+        </div>
+        <a href="/preventivo/" class="btn">Richiedi preventivo</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    padding-block: clamp(2.5rem, 8vw, 5rem) clamp(1rem, 4vw, 2rem);
+  }
+  .hero-grid {
+    display: grid;
+    gap: 2.5rem;
+    align-items: center;
+  }
+  @media (min-width: 860px) {
+    .hero-grid {
+      grid-template-columns: 1.2fr 0.8fr;
+    }
+  }
+  .lead {
+    max-width: 36rem;
+    font-size: 1.15rem;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.75rem;
+  }
+
+  /* Scheda "in breve" */
+  .idcard {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 1.25rem;
+    padding: 2rem 1.5rem 1.5rem;
+    overflow: hidden;
+    border-color: var(--border-strong);
+  }
+  .glow {
+    position: absolute;
+    inset: -20% -10% auto;
+    height: 70%;
+    background:
+      radial-gradient(circle at 30% 50%, rgba(64, 131, 176, 0.35), transparent 60%),
+      radial-gradient(circle at 75% 50%, rgba(194, 62, 104, 0.35), transparent 60%);
+    filter: blur(35px);
+  }
+  .idcard img {
+    position: relative;
+    width: 96px;
+    height: auto;
+    filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.5));
+  }
+  .idcard dl {
+    position: relative;
+    display: grid;
+    width: 100%;
+    margin: 0;
+  }
+  .idcard dl div {
+    display: grid;
+    grid-template-columns: 5rem 1fr;
+    gap: 0.75rem;
+    padding: 0.65rem 0;
+    border-top: 1px solid var(--border);
+  }
+  dt {
+    color: var(--blue);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    align-self: center;
+  }
+  dd {
+    margin: 0;
+    font-weight: 500;
+  }
+
+  /* Storia */
+  .story {
+    display: grid;
+    gap: 2rem;
+  }
+  @media (min-width: 860px) {
+    .story {
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 3rem;
+      align-items: start;
+    }
+    .story > div:first-child {
+      position: sticky;
+      top: calc(var(--header-h) + 1.5rem);
+    }
+  }
+  .timeline {
+    position: relative;
+    display: grid;
+    gap: 1.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: linear-gradient(var(--blue-line), var(--accent));
+    opacity: 0.55;
+  }
+  .timeline li {
+    position: relative;
+    display: flex;
+    gap: 1.1rem;
+  }
+  .dot {
+    position: relative;
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 1px solid var(--border-strong);
+    background: var(--bg-elevated);
+    color: var(--accent-text);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+  .timeline h3 {
+    margin: 0.35rem 0 0.2rem;
+    font-size: 1.15rem;
+  }
+  .timeline p {
+    margin: 0;
+  }
+
+  /* Citazione */
+  .tight {
+    padding-block: clamp(1.5rem, 4vw, 2.5rem);
+  }
+  .quote {
+    margin: 0;
+    padding: clamp(1.5rem, 5vw, 3rem);
+    border-color: var(--border-strong);
+    background:
+      radial-gradient(ellipse 60% 120% at 0% 0%, rgba(64, 131, 176, 0.18), transparent 70%),
+      radial-gradient(ellipse 60% 120% at 100% 100%, rgba(194, 62, 104, 0.2), transparent 70%),
+      var(--bg-elevated);
+  }
+  blockquote {
+    margin: 0 0 1rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 4.5vw, 2.4rem);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+  figcaption {
+    max-width: 40rem;
+    color: var(--text-muted);
+  }
+
+  .cta-band {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: clamp(1.5rem, 5vw, 2.5rem);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    background:
+      radial-gradient(ellipse 60% 120% at 100% 0%, rgba(194, 62, 104, 0.2), transparent 70%),
+      radial-gradient(ellipse 60% 120% at 0% 100%, rgba(64, 131, 176, 0.18), transparent 70%),
+      var(--bg-elevated);
+  }
+  .cta-band h2 {
+    margin-bottom: 0.3rem;
+  }
+  .cta-band p {
+    margin: 0;
+  }
+</style>
